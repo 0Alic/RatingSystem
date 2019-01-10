@@ -2,18 +2,21 @@ pragma solidity ^0.5.0;
 
 import "./Interfaces.sol";
 import "./RatingComputer.sol";
+import "./AssetStorage.sol";
 
 /// @title User
 /// @notice This contract represents a user of the RatingSystemFramework, which now can rate Items
-contract User is Ownable, Factory  {
+contract User is Ownable {
 
+    OwnableCRUDStorage private items;
     bytes32 public name;
-
+    
     /// @param _name the username of the User
     /// @param _owner the address of the User
     /// @dev The constructor calls the Ownable constructor to store the owner which should be passed by the RatingSystemFramework
     constructor (bytes32 _name, address _owner) Ownable(_owner)  public {
 
+        items = new OwnableCRUDStorage(_owner);
         name = _name;
     }
 
@@ -22,19 +25,39 @@ contract User is Ownable, Factory  {
     function createItem(bytes32 _name) public isOwner {
 
         Item item = new Item(_name, owner);
-        updateAssets(address(item));
+        items.insert(address(item));
     }
 
-/*
-    function deleteItem(uint _id) public isOwner {
 
-        deleteAsset(_id);
+    function deleteItem(address _item) public isOwner {
+
+        items.remove(_item);
     }
-*/
+
+    function getItems() public view returns(address[] memory) {
+
+        return items.getAssets();
+    }
+
+    function itemCount() public view returns(uint) {
+
+        return items.getCount();
+    }
+
+    function isIn(address _item) public view returns(bool) {
+
+        return items.isIn(_item);
+    }
+
+    // Da qui sotto probabilmente inutili
+    function getItemByIndex(uint _index) public view returns(address) {
+
+        return items.getKeyAt(_index);
+    }
+
 }
 
 contract Item is Permissioned {
-
 
     // Rating data bundle
     struct Rating {
@@ -106,3 +129,12 @@ contract Item is Permissioned {
     
 }
 
+contract OwnableCRUDStorage is StoragePointer, Ownable {
+
+    constructor(address _owner) public Ownable(_owner) {}
+
+    function remove(address a) public isOwner {
+
+        super.remove(a);
+    }
+}

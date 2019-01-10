@@ -1,4 +1,5 @@
 const RatingSystem = artifacts.require("RatingSystemFramework");
+const Storage = artifacts.require("AssetStorage");
 const User = artifacts.require("User");
 const Item = artifacts.require("Item");
 
@@ -6,38 +7,83 @@ const Item = artifacts.require("Item");
 
 contract("RatingSystemFramework", accounts => {
 
-    const sender = accounts[0];
-    const user = accounts[1];
-    const userName = "Bob";
-    const item = accounts[2]; // Use account from ganache as Item's address
-    const itemName = "Bobs content";
+    // Bob's
+    const bob = accounts[1];
+    const bobName = "Bob";
+    const bobItem = accounts[2]; // Use account from ganache as Item's address
+    const bobItemName = "Bobs content";
     const timestamp = 1;
     const score = 5;
+
+    const sender = accounts[0];
     var tx;
 
-    it("Should create a user called " + userName, async() => {
+    getInstanceAtPosition = async(list, pos, contractType) => {
+
+        return await contractType.at(list[pos]);
+    }
+
+    it("Should create a user called " + bobName, async() => {
 
         const ratingSystem = await RatingSystem.deployed();
-        const userName = "Bob";
-        tx = await ratingSystem.createUser(web3.utils.fromUtf8(userName), {from: user});
-        const userList = await ratingSystem.getAssets();
-        const userAddress = userList[0];
-        const userObject = await User.at(userAddress);
+        tx = await ratingSystem.createUser(web3.utils.fromUtf8(bobName), {from: bob});
+        const bobObject = await getInstanceAtPosition(await ratingSystem.getUsers(), 0, User);
+//        const userList = await ratingSystem.getUsers();
+//        const bobObjectAddress = userList[0]; 
+//        const bobObject = await User.at(bobObjectAddress);
 
-        const owner = await userObject.owner();
+        const owner = await bobObject.owner();
 
-        console.log("User addr " + user);
+        // Check ownership
+        console.log("User addr " + bob);
         console.log("User owner " + owner);
+        assert.equal(bob, owner, "The owner is not " + bobName);
+    });
 
-        tx = await userObject.createItem(web3.utils.fromUtf8(itemName), {from: user});
-        const itemList = await userObject.getAssets();
-        const deployedItemAddress = itemList[0];
+    it("Should create an item called " + bobItemName + " for " + bobName, async() => {
 
-        const itemObject = await Item.at(deployedItemAddress);
+        // Retrieve bob's User contract instance        
+        const ratingSystem = await RatingSystem.deployed();
+        const bobObject = await getInstanceAtPosition(await ratingSystem.getUsers(), 0, User);
+        // const userList = await ratingSystem.getUsers();
+        // const bobObjectAddress = userList[0]; 
+        // const bobObject = await User.at(bobObjectAddress);
+        // Create Item for bob
+        const tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), {from: bob});
+        // Retrieve item's contract instance
+        const itemObject = await getInstanceAtPosition(await bobObject.getItems(), 0, Item);
+        // const itemList = await bobObject.getItems();
+        // const deployedItemAddress = itemList[0];
+        // const itemObject = await Item.at(deployedItemAddress);
 
-        console.log(web3.utils.toUtf8(await itemObject.name()));
+        const itemName = web3.utils.toUtf8(await itemObject.name())
+        console.log("Item name: " + itemName);     
+        assert.equal(itemName, bobItemName, "The item is not " + bobItemName);
     }); 
 
+    it("Should remove and insert again " + bobName, async() => {
+
+        const ratingSystem = await RatingSystem.deployed();
+        await ratingSystem.deleteUser(bob, {from: bob});
+        await ratingSystem.createUser(web3.utils.fromUtf8(bobName), {from: bob});
+        
+        const userList = await ratingSystem.getUsers();
+        for(let i=0; i<userList.length; i++) { // for each non funziona :|
+            const user = userList[i];            
+            const userObject = await User.at(user);
+            const bytes = await userObject.name();
+            const name = web3.utils.toUtf8(bytes);
+            console.log(name);
+        }
+    });
+
+    it("Should test security concerning the Storage contract", async() => {
+
+        const ratingSystem = await RatingSystem.deployed();
+    });
+
+
+    /*
     const n = 5;
     it("Should insert " + n + " Items", async() => {
 
@@ -116,5 +162,5 @@ contract("RatingSystemFramework", accounts => {
         console.log(timestamps.map( e => e.toNumber()));
         console.log(raters);
     });
-
+    */
 });

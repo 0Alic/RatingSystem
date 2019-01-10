@@ -2,49 +2,6 @@ pragma solidity ^0.5.0;
 
 import "./Entities.sol";
 
-// Lista linkata + mapping?
-
-// Create a CRUD structure
-// 
-contract AssetStorage {
-
-    struct AssetStruct {
-
-//        address asset;
-        uint pointer;
-    }
-/*
-    // address => pointer
-    mapping(address => AssetStruct) assetMap;
-    address[] assetArray = new address[](1); // posizion 0 "special"
-
-    function insert(address _newAssetAddress) public {
-
-        require(assetMap[_newAssetAddress].pointer == 0, "ASDa");
-
-        uint id = assetArray.push(_newAssetAddress);
-        assetMap[_newAssetAddress] = AssetStorage({pointer: id-1});
-
-        uint id = assetArray.length;
-        require(assetMap[id] == address(0x0), "Asset already present");
-
-        assetArray.push(id);
-        assetMap[id] = _newAssetAddress;
-
-    }
-
-    function delete(address _assetToDelete) public {
-
-        uint positionToDelete = assetMap[_assetToDelete].pointer;
-        require(positionToDelete != 0, "ndsajk");
-
-        uint idToMove = 
-        assetArray[idPosition] = assetArray[assetArray.length-1];
-
-    }
-    */
-}
-
 
 contract Ownable {
 
@@ -67,52 +24,6 @@ contract Ownable {
     }
 }
 
-contract Factory {
-
-    uint public assetCount;
-    uint public maxId;
-    // Map id => asset_contract_address
-    mapping(uint => address) public assetMap; // First should have key = 1
-//    address[] assetMap;
-
-    function updateAssets(address _newAssetAddress) internal {
-
-        assetCount++;
-        maxId++;
-//        assetMap.push(_newAssetAddress);
-        assetMap[assetCount] = _newAssetAddress;
-    }
-
-/*
-    function deleteAsset(uint _id) internal {
-        
-        require(_id >= 0 && _id < assetMap.length, "Invalid key");
-//        require(assetMap[_id] != address(0x0), "Asset not present");
-
-        delete assetMap[_id];   // Essere sicuro che la chiami solo il proprietario
-        assetCount--;
-    }
-*/
-    function getAssets() public view returns(address[] memory) {
-
-        address[] memory assets = new address[](assetCount);
-        uint c = 0;
-
-        // Garantire che in ogni caso ho assetCount entrate validi
-        for(uint i=0; i<maxId; i++) {
-
-            if(assetMap[i+1] != address(0x0)){
-
-                assets[c] = assetMap[i+1];
-                c++;
-            }
-        }
-        
-        return assets;
-        
-//        return assetMap;
-    }
-}
 
 
 contract Permissioned is Ownable {

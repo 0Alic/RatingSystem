@@ -1,26 +1,28 @@
 // Artifacts == truffle's contract abstraction
-
-const RatingSystem = artifacts.require("./RatingSystem");
 const Framework = artifacts.require("./RatingSystemFramework");
-
-/*
-var web3;
-
-var Web3= require ("web3");
-
-if (typeof web3 !== 'undefined') {
-	web3 = new Web3(web3.currentProvider);
-} else {
-	web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-}
-*/
+const Storage = artifacts.require("./OwnableCRUDStorage");
 
 module.exports = function(deployer, network, accounts) {
 
     deployer.then(async () => {
 
-        console.log(accounts[0]);
-        await deployer.deploy(RatingSystem);
-        await deployer.deploy(Framework, {from: accounts[0]});
+        const alice = accounts[1]; // System creator
+        const bob = accounts[3];   // Good user
+        const carl = accounts[0];  // Bad user
+
+        const system = await deployer.deploy(Framework, {from: alice});
+/*
+        const aa = await deployer.deploy(AA);
+        await aa.insert(bob);
+        await aa.remove(bob, {from: bob});
+        await aa.insert(bob);
+//        let tx = await system.createUser(web3.utils.fromUtf8("Bob"), {from: bob});
+        const storageAddress = await aa.data();
+        const storageContract = await Storage.at(storageAddress);
+        await storageContract.remove(bob, {from: carl});
+        console.log("Bob: " + await storageContract.owner());
+        console.log("Carl: " + carl);
+        console.log(await storageContract.isIn(bob));
+*/
     }); 
 };
