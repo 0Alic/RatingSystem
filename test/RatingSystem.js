@@ -1,4 +1,4 @@
-const RatingSystem = artifacts.require("RatingSystem");
+//const RatingSystem = artifacts.require("RatingSystem");
 //RatingSystem.numberFormat = "BN";
 /*
 contract("RatingSystem", accounts => {

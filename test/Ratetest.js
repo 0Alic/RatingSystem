@@ -28,15 +28,16 @@ contract("RatingSystemFramework", accounts => {
         const ratingSystem = await RatingSystem.deployed();
         tx = await ratingSystem.createUser(web3.utils.fromUtf8(bobName), {from: bob});
         const bobObject = await getInstanceAtPosition(await ratingSystem.getUsers(), 0, User);
+//        console.log(await ratingSystem.userCount());
 //        const userList = await ratingSystem.getUsers();
 //        const bobObjectAddress = userList[0]; 
 //        const bobObject = await User.at(bobObjectAddress);
 
-        const owner = await bobObject.owner();
 
         // Check ownership
-        console.log("User addr " + bob);
-        console.log("User owner " + owner);
+        const owner = await bobObject.owner();
+//        console.log("User addr " + bob);
+//        console.log("User owner " + owner);
         assert.equal(bob, owner, "The owner is not " + bobName);
     });
 
@@ -44,6 +45,7 @@ contract("RatingSystemFramework", accounts => {
 
         // Retrieve bob's User contract instance        
         const ratingSystem = await RatingSystem.deployed();
+        const users = await ratingSystem.getUsers();
         const bobObject = await getInstanceAtPosition(await ratingSystem.getUsers(), 0, User);
         // const userList = await ratingSystem.getUsers();
         // const bobObjectAddress = userList[0]; 
@@ -57,14 +59,16 @@ contract("RatingSystemFramework", accounts => {
         // const itemObject = await Item.at(deployedItemAddress);
 
         const itemName = web3.utils.toUtf8(await itemObject.name())
-        console.log("Item name: " + itemName);     
+//        console.log("Item name: " + itemName);     
         assert.equal(itemName, bobItemName, "The item is not " + bobItemName);
     }); 
 
     it("Should remove and insert again " + bobName, async() => {
 
         const ratingSystem = await RatingSystem.deployed();
-        await ratingSystem.deleteUser(bob, {from: bob});
+        const bobObject = await getInstanceAtPosition(await ratingSystem.getUsers(), 0, User);
+//        const bobObject = await getInstanceAtPosition(await ratingSystem.getUsers(), 0, User);
+        await ratingSystem.deleteUser(bobObject.address, {from: bob});
         await ratingSystem.createUser(web3.utils.fromUtf8(bobName), {from: bob});
         
         const userList = await ratingSystem.getUsers();
@@ -75,6 +79,16 @@ contract("RatingSystemFramework", accounts => {
             const name = web3.utils.toUtf8(bytes);
             console.log(name);
         }
+    });
+
+    it("Should NOT insert duplicate Users in the Storage contract", async() => {
+
+        const ratingSystem = await RatingSystem.deployed();
+
+        await ratingSystem.createUser(web3.utils.fromUtf8(bobName+"2"), {from: bob}).then(assert.fail).catch(function(error) {
+            // Should fail because User "bob" is already registered by "user"
+            assert(error.message.indexOf('revert') >= 0, 'User ' + bob +  ' already registerd');
+        });
     });
 
     it("Should test security concerning the Storage contract", async() => {

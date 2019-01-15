@@ -1,8 +1,9 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.0;
 
 import "./Entities.sol";
 
-
+/// @title Ownable
+/// @notice This contract keeps the information of its owner, passed as parameter to the constructor. It provides a modifier to let only the owner to pass its guard
 contract Ownable {
 
     address public owner;  // Array di owners
@@ -25,7 +26,8 @@ contract Ownable {
 }
 
 
-
+/// @title Permissioned
+/// @notice This contract defines a permission policy and provides the functions to grant/revoke permissions to certain users/contracts
 contract Permissioned is Ownable {
 
     struct PermissionPolicy {

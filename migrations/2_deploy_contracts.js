@@ -8,7 +8,7 @@ module.exports = function(deployer, network, accounts) {
 
         const alice = accounts[1]; // System creator
         const bob = accounts[3];   // Good user
-        const carl = accounts[0];  // Bad user
+        const carl = accounts[0];  // Rater user
 
         const system = await deployer.deploy(Framework, {from: alice});
 /*
