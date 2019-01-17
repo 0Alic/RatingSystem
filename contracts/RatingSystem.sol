@@ -72,6 +72,7 @@ contract RatingSystemFramework is Ownable {
     }
 
 
+    // Can be deleted
 
     /// @notice Get the number of stored User contracts in this System
     /// @return The number of stored User contracts

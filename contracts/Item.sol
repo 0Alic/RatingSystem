@@ -22,7 +22,6 @@ contract Item is Permissioned {
     // Function to compute the final score of this Item
     RatingComputer public computer;
 
-
     constructor (bytes32 _name, address _owner, RatingComputer _computer) Permissioned(_owner) public {
 
         name = _name;
@@ -41,8 +40,10 @@ contract Item is Permissioned {
                                                         rater: msg.sender,
                                                         rated: address(this) });
         
+
+
         ratingCount++;
-        revokePermission(msg.sender);
+        revokePermission(msg.sender); // mettere come prima istruzione? Vedi re-entracy attack
     }
     
     function changeComputer(RatingComputer _newComputer) public isOwner {
@@ -53,6 +54,7 @@ contract Item is Permissioned {
     function computeRate() public view returns (uint) {
 
         // Facendo così faccio 2 for: uno per crearmi l'array ed uno per calcolarci il rate finale
+        // Dai test avere un secondo array con solo gli scores ed evitare questo loop l'ordine di grandezza non cambia
         uint[] memory _scores = new uint[](ratingCount);
         for(uint i=0; i<ratingCount; i++) {
             _scores[i] = ratingMap[i].score;
@@ -75,4 +77,5 @@ contract Item is Permissioned {
             _raters[i] = ratingMap[i].rater;
         }   
     }    
+
 }

@@ -200,7 +200,44 @@ contract("RatingSystemFramework", accounts => {
             // Should fail because Carl has no permission to rate
             assert(error.message.indexOf('revert') >= 0, 'Dave ' + dave +  ' cannot grant permission to Alice on ' + bobItemName);
         });
-        
     });
 
+    it("Should test the RatingComputer contract for " + bobItemName , async() => {
+
+        const ratingSystem = await RatingSystem.deployed();
+        const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+        const bobObject = await User.at(bobUserAddress);
+        const bobItemList = await bobObject.getItems();
+        const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
+        const bobItem = await Item.at(bobItemAddress);
+
+        // Perform a loop of rating
+        let ratings = [];
+        let expectedScore = score;
+        ratings.push({score: 7, timestamp: 2, rater: alice});
+        ratings.push({score: 4, timestamp: 4, rater: dave});
+        ratings.push({score: 6, timestamp: 7, rater: carl});
+
+        ratings.push({score: 1, timestamp: 9, rater: carl});
+        ratings.push({score: 9, timestamp: 15, rater: dave});
+        ratings.push({score: 10, timestamp: 22, rater: carl});
+
+        ratings.push({score: 10, timestamp: 34, rater: carl});
+        ratings.push({score: 8, timestamp: 55, rater: dave});
+        ratings.push({score: 4, timestamp: 89, rater: dave});
+
+        ratings.forEach(async (rating) => {
+
+            expectedScore += rating.score;
+            bobItem.grantPermission(rating.rater, {from: bob});
+            bobItem.rate(rating.score, rating.timestamp, {from: rating.rater});
+        });
+
+        assert.equal(await bobItem.ratingCount(), ratings.length+1, bobItemName + " should have " + (ratings.length+1) + " ratings");
+
+        // Compute the rating
+        expectedScore = Math.floor(expectedScore/(ratings.length+1)); // Solidity truncates uint
+
+        assert.equal(await bobItem.computeRate(), expectedScore, bobItemName + " should have an average score of " + expectedScore);
+    });
 });
