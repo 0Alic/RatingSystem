@@ -1,7 +1,5 @@
 pragma solidity 0.5.0;
 
-import "./Entities.sol";
-
 /// @title Ownable
 /// @notice This contract keeps the information of its owner, passed as parameter to the constructor. It provides a modifier to let only the owner to pass its guard
 contract Ownable {
@@ -51,9 +49,9 @@ contract Permissioned is Ownable {
     }
 
 
-    function revokePermission(address _to) internal {
+    function revokePermission(address _to) public {
 
-        require(msg.sender == _to, "You cannot revoke permission to other users");
+        require(msg.sender == _to || msg.sender == owner, "You cannot revoke permission to other users");
 
         permissionMap[_to] = PermissionPolicy({granted: false, periodStart: 0});
     }

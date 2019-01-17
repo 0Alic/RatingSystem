@@ -1,6 +1,6 @@
 pragma solidity 0.5.0;
 
-//import "./Interfaces.sol"; //causa problemi con User is Ownable
+import {Ownable} from "./Interfaces.sol"; //causa problemi con User is Ownable
 
 /// @title AssetStorage
 /// @notice This contract interface defines the methods needed by a storage data structure
@@ -83,3 +83,21 @@ contract StoragePointer is AssetStorage {
     }
 }
 
+
+
+/// @title OwnableCRUDStorage
+/// @notice Extension of StoragePointer such that insert/remove operations are allowed only by the owner of the storage
+contract OwnableCRUDStorage is StoragePointer, Ownable {
+
+    constructor(address _owner) public Ownable(_owner) {}
+
+    function insert(address a) public isOwner {
+
+        super.insert(a);
+    }
+    
+    function remove(address a) public isOwner {
+
+        super.remove(a);
+    }
+}

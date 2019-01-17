@@ -1,6 +1,7 @@
 pragma solidity 0.5.0;
 
-import "./Entities.sol";
+import "./User.sol";
+import "./Item.sol";
 import "./Interfaces.sol";
 import "./AssetStorage.sol";
 
@@ -40,6 +41,8 @@ contract RatingSystemFramework is Ownable {
     /// @dev This function removes from the CRUDStorage the User contract and then removes from the map of addresses the attached User contract
     function deleteUser(User _user) public  {
 
+        require(userAddresses[msg.sender] == _user, "You cannot remove other's user's contracts");
+
         users.remove(address(_user));
         delete userAddresses[msg.sender];
     }
@@ -60,19 +63,21 @@ contract RatingSystemFramework is Ownable {
         return users.getAssets();
     }
 
-    /// @notice Get the number of stored User contracts in this System
-    /// @return The number of stored User contracts
-    function userCount() public view returns(uint) {
-
-        return users.getCount();
-    }
-
     /// @notice Check if a User contract is present
     /// @param _user Contract User to check the presence
     /// @return true if _user is present
     function isIn(User _user) public view returns(bool) {
 
         return users.isIn(address(_user));
+    }
+
+
+
+    /// @notice Get the number of stored User contracts in this System
+    /// @return The number of stored User contracts
+    function userCount() public view returns(uint) {
+
+        return users.getCount();
     }
 
     /// @notice Get the address of the User contract at a given index
