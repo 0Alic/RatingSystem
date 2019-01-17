@@ -11,6 +11,7 @@ contract("RatingSystemFramework", accounts => {
     const alice = accounts[1]; // System creator
     const bob = accounts[3];   // User of the System
     const carl = accounts[0];  // Rater user
+    const dave = accounts[2];  // Error Test user
 
     const bobName = "Bob";
     const bobItemName = "Bobs content";
@@ -30,8 +31,6 @@ contract("RatingSystemFramework", accounts => {
 
         // Check ownership
         const owner = await bobObject.owner();
-//        console.log("User addr " + bob);
-//        console.log("User owner " + owner);
         assert.equal(bob, owner, "The owner is not " + bobName);
     });
 
@@ -67,12 +66,12 @@ contract("RatingSystemFramework", accounts => {
         });        
     });
 
-    it("Carl should NOT remove Bob's User contract", async() => {
+    it("Dave should NOT remove Bob's User contract", async() => {
 
         const ratingSystem = await RatingSystem.deployed();
         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
 
-        await ratingSystem.deleteUser(bobUserAddress, {from: carl}).then(assert.fail).catch(function(error) {
+        await ratingSystem.deleteUser(bobUserAddress, {from: dave}).then(assert.fail).catch(function(error) {
             // Should fail because User "bob" is already registered inside RatingSystem
             assert(error.message.indexOf('revert') >= 0, 'User ' + bobUserAddress +  ' can be removed only by ' + bob);
         });        
@@ -167,4 +166,37 @@ contract("RatingSystemFramework", accounts => {
         // Check that the number of ratings of Bob's Item is still 1
         assert.equal(await bobItem.ratingCount(), 1, bobItemName + " should have only 1 rating");
     });
+
+    it("Should avoid bugs in grantPermission() and revokePermission()", async() => {
+
+        const ratingSystem = await RatingSystem.deployed();
+        const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+        const bobObject = await User.at(bobUserAddress);
+        const bobItemList = await bobObject.getItems();
+        const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
+        const bobItem = await Item.at(bobItemAddress);
+
+        // Suppose Bob and Carl agreed in some way that Carl can rate Bob's Item
+        await bobItem.grantPermission(carl, {from: bob});
+
+        // Dave tries to revoke Carl's permissions
+        await bobItem.revokePermission(carl, {from: dave}).then(assert.fail).catch(function(error) {
+            // Should fail because Carl has no permission to rate
+            assert(error.message.indexOf('revert') >= 0, 'Dave ' + dave +  ' cannot revoke permissions to other');
+        });
+
+        // Dave tries to grant permissions to himself
+        await bobItem.grantPermission(dave, {from: dave}).then(assert.fail).catch(function(error) {
+            // Should fail because Carl has no permission to rate
+            assert(error.message.indexOf('revert') >= 0, 'Dave ' + dave +  ' cannot grant permission to himself on ' + bobItemName);
+        });
+
+        // Dave tries to grant permissions to Alice
+        await bobItem.grantPermission(alice, {from: dave}).then(assert.fail).catch(function(error) {
+            // Should fail because Carl has no permission to rate
+            assert(error.message.indexOf('revert') >= 0, 'Dave ' + dave +  ' cannot grant permission to Alice on ' + bobItemName);
+        });
+        
+    });
+
 });
