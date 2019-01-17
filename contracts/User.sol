@@ -4,6 +4,7 @@ import "./Interfaces.sol";
 import "./AssetStorage.sol";
 import "./RatingLibrary.sol";
 import "./Item.sol";
+import "./RatingComputer.sol";
 
 /// @title User
 /// @notice This contract represents a user of the RatingSystemFramework. A user can create Items
@@ -63,9 +64,9 @@ contract User is Ownable {
 
     /// @notice creates an Item with a name
     /// @param _name the name of the Item to create
-    function createItem(bytes32 _name) public isOwner {
+    function createItem(bytes32 _name, RatingComputer _computer) public isOwner {
 
-        Item item = new Item(_name, owner);
+        Item item = new Item(_name, owner, _computer);
         items.insert(address(item));
     }
 

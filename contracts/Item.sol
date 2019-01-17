@@ -23,10 +23,10 @@ contract Item is Permissioned {
     RatingComputer public computer;
 
 
-    constructor (bytes32 _name, address _owner) Permissioned(_owner) public {
+    constructor (bytes32 _name, address _owner, RatingComputer _computer) Permissioned(_owner) public {
 
         name = _name;
-        computer = new SimpleAvarageComputer();
+        computer = _computer;
     }
 
 

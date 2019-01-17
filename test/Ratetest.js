@@ -2,6 +2,7 @@ const RatingSystem = artifacts.require("RatingSystemFramework");
 const Storage = artifacts.require("AssetStorage");
 const User = artifacts.require("User");
 const Item = artifacts.require("Item");
+const ComputerRegistry = artifacts.require("ComputerRegistry");
 
 //RatingSystem.numberFormat = "BN";
 
@@ -88,8 +89,11 @@ contract("RatingSystemFramework", accounts => {
         const ratingSystem = await RatingSystem.deployed();
         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
         const bobObject = await User.at(bobUserAddress);
+        // Retrieve ComputerRegistry and the address of the simple average computer
+        const computerRegistry = await ComputerRegistry.deployed();
+        const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
         // Create Item for bob
-        const tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), {from: bob});
+        const tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), computerAddress, {from: bob});
         // Retrieve item's contract instance
         const itemList = await bobObject.getItems();
         const deployedItemAddress = itemList[0];

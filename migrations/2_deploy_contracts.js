@@ -16,7 +16,7 @@ module.exports = function(deployer, network, accounts) {
         const computerRegistry = await deployer.deploy(ComputerRegistry, {from: alice});
         const simpleAvgComputer = await deployer.deploy(SimpleComputer, {from: alice});
 
-        computerRegistry.pushComputer(simpleAvgComputer.address, {from: alice})
+        computerRegistry.pushComputer(simpleAvgComputer.address, web3.utils.fromUtf8("Simple Average"),{from: alice})
 /*
         const aa = await deployer.deploy(AA);
         await aa.insert(bob);
