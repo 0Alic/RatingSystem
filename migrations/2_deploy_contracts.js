@@ -1,6 +1,8 @@
 // Artifacts == truffle's contract abstraction
 const Framework = artifacts.require("./RatingSystemFramework");
 const Storage = artifacts.require("./OwnableCRUDStorage");
+const ComputerRegistry = artifacts.require("./ComputerRegistry");
+const SimpleComputer = artifacts.require("./SimpleAvarageComputer");
 
 module.exports = function(deployer, network, accounts) {
 
@@ -11,6 +13,10 @@ module.exports = function(deployer, network, accounts) {
         const carl = accounts[0];  // Rater user
 
         const system = await deployer.deploy(Framework, {from: alice});
+        const computerRegistry = await deployer.deploy(ComputerRegistry, {from: alice});
+        const simpleAvgComputer = await deployer.deploy(SimpleComputer, {from: alice});
+
+        computerRegistry.pushComputer(simpleAvgComputer.address, {from: alice})
 /*
         const aa = await deployer.deploy(AA);
         await aa.insert(bob);

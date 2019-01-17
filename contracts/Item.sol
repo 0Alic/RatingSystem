@@ -47,7 +47,7 @@ contract Item is Permissioned {
     
     function changeComputer(RatingComputer _newComputer) public isOwner {
 
-        computer = _newComputer;// ha senso? perché così facendo si creano contratti che poi rimangono inutilizzabili
+        computer = _newComputer;
     }
 
     function computeRate() public view returns (uint) {

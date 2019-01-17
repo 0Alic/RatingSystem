@@ -59,6 +59,7 @@ contract ComputerRegistry is Ownable {
     RatingComputer[] private registry;
     bytes32[] private ids;
 
+    constructor() Ownable(msg.sender) public {}
 
     function pushComputer(RatingComputer _computer, bytes32 _name) external isOwner {
 
