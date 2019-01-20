@@ -19,9 +19,11 @@ contract("RatingSystemFramework", accounts => {
     const timestamp = 1;
     const score = 5;
 
+
     /////////////////
     // Tests concerning Users
     /////////////////
+
 
     it("Should create a user called " + bobName, async() => {
 
@@ -34,6 +36,7 @@ contract("RatingSystemFramework", accounts => {
         const owner = await bobObject.owner();
         assert.equal(bob, owner, "The owner is not " + bobName);
     });
+
 
     it("Should remove and insert again " + bobName, async() => {
 
@@ -57,6 +60,7 @@ contract("RatingSystemFramework", accounts => {
         assert.equal(nameList[0], bobName, "The user list should contain only Bob");
     });
 
+
     it("Should NOT insert duplicate Users in the Storage contract", async() => {
 
         const ratingSystem = await RatingSystem.deployed();
@@ -66,6 +70,7 @@ contract("RatingSystemFramework", accounts => {
             assert(error.message.indexOf('revert') >= 0, 'User ' + bob +  ' already registerd');
         });        
     });
+
 
     it("Dave should NOT remove Bob's User contract", async() => {
 
@@ -77,6 +82,7 @@ contract("RatingSystemFramework", accounts => {
             assert(error.message.indexOf('revert') >= 0, 'User ' + bobUserAddress +  ' can be removed only by ' + bob);
         });        
     });
+
 
     /////////////////
     // Tests concerning Items and rates
@@ -102,6 +108,7 @@ contract("RatingSystemFramework", accounts => {
         const itemName = web3.utils.toUtf8(await itemObject.name())
         assert.equal(itemName, bobItemName, "The item is not " + bobItemName);
     }); 
+
 
     it("Should let Carl to rate " + bobItemName + " " + score + " stars", async() => {
 
@@ -129,6 +136,7 @@ contract("RatingSystemFramework", accounts => {
         assert.equal(ratingBundle._raters[0], carl, "The rater should be Carl: " + carl);
     });
 
+
     it("Should not let Carl to rate again", async() => {
 
         const ratingSystem = await RatingSystem.deployed();
@@ -146,6 +154,7 @@ contract("RatingSystemFramework", accounts => {
         // Check that the number of ratings of Bob's Item is still 1
         assert.equal(await bobItem.ratingCount(), 1, bobItemName + " should have only 1 rating");
     });
+
 
     it("Should check the revokePermission() from Bob to Carl", async() => {
 
@@ -170,6 +179,7 @@ contract("RatingSystemFramework", accounts => {
         // Check that the number of ratings of Bob's Item is still 1
         assert.equal(await bobItem.ratingCount(), 1, bobItemName + " should have only 1 rating");
     });
+
 
     it("Should avoid bugs in grantPermission() and revokePermission()", async() => {
 
@@ -201,6 +211,7 @@ contract("RatingSystemFramework", accounts => {
             assert(error.message.indexOf('revert') >= 0, 'Dave ' + dave +  ' cannot grant permission to Alice on ' + bobItemName);
         });
     });
+    
 
     it("Should test the RatingComputer contract for " + bobItemName , async() => {
 

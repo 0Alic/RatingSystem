@@ -30,11 +30,12 @@ contract User is Ownable {
         name = _name;
     }
 
+
     /// @notice Function to call to rate an Item and keep track of the rating
     /// @param _item The Item to rate
     /// @param _score The score to assign to that Item
-    /// @param _timestamp The timestamp of the rating (provided by higher call)
-    function rate(Item _item, uint8 _score, uint _timestamp) public isOwner {
+    /// @param _timestamp The timestamp of the rating (should be provided by higher level call)
+    function rate(Item _item, uint8 _score, uint _timestamp) external isOwner {
 
         _item.rate(_score, _timestamp);
 
@@ -46,9 +47,14 @@ contract User is Ownable {
         ratingCount++;
     }
 
-    function getAllRatings() public view returns(uint[] memory _scores, 
-                                                uint[] memory _timestamps,
-                                                address[] memory _rated) {
+
+    /// @notice Get all the ratings information connected to this Item
+    /// @return _scores: the array of scores
+    /// @return _timestamps: the array of timestamps
+    /// @return _rated: the array of addresses rated by this User
+    function getAllRatings() external view returns(uint[] memory _scores, 
+                                                    uint[] memory _timestamps,
+                                                    address[] memory _rated) {
 
         _scores = new uint[](ratingCount);
         _timestamps = new uint[](ratingCount);
@@ -62,38 +68,56 @@ contract User is Ownable {
         }
     }
 
-    /// @notice creates an Item with a name
+
+    /// @notice Creates an Item with a name
     /// @param _name the name of the Item to create
-    function createItem(bytes32 _name, RatingComputer _computer) public isOwner {
+    /// @param _computer The RatingComputer to attach for the computation of the final score of this Item
+    function createItem(bytes32 _name, RatingComputer _computer) external isOwner {
 
         Item item = new Item(_name, owner, _computer);
         items.insert(address(item));
     }
 
 
-    function deleteItem(address _item) public isOwner {
+    /// @notice Removes the Item
+    /// @param _item the address of the Item to remove
+    function deleteItem(Item _item) external isOwner {
 
-        items.remove(_item);
+        items.remove(address(_item));
     }
 
-    function getItems() public view returns(address[] memory) {
+
+    /// @notice Get all the Item of this User
+    /// @return The array of Item
+    function getItems() external view returns(address[] memory) {
 
         return items.getAssets();
     }
 
 
-    function isIn(address _item) public view returns(bool) {
+    /// @notice Check whether an Item belongs to this User
+    /// @param _item The item to check
+    /// @return True if the Item belongs to this User; false otherwise
+    function isIn(address _item) external view returns(bool) {
 
         return items.isIn(_item);
     }
 
+    
     // Da qui sotto probabilmente inutili
-    function itemCount() public view returns(uint) {
+
+    /// @notice Get the number of Item deployed by this User
+    /// @return The number of Item
+    function itemCount() external view returns(uint) {
 
         return items.getCount();
     }
 
-    function getItemByIndex(uint _index) public view returns(address) {
+
+    /// @notice Get the Item of a given index
+    /// @param _index The index of the Item
+    /// @return The Item
+    function getItemByIndex(uint _index) external view returns(address) {
 
         return items.getKeyAt(_index);
     }

@@ -27,7 +27,7 @@ contract RatingSystemFramework is Ownable {
     /// @notice creates a User with an username
     /// @param _name the username of the user willing to subscribe
     /// @dev This function checks that the sender has not already stored a User contract, stores inside users a new User smart contract, and then updates the map of addresses witha User contract attached
-    function createUser(bytes32 _name) public {
+    function createUser(bytes32 _name) external {
 
         require(address(userAddresses[msg.sender]) == address(0x0), "This address has already a User registered");
 
@@ -39,7 +39,7 @@ contract RatingSystemFramework is Ownable {
     /// @notice Removes a User
     /// @param _user The address of the User contract to remove
     /// @dev This function removes from the CRUDStorage the User contract and then removes from the map of addresses the attached User contract
-    function deleteUser(User _user) public  {
+    function deleteUser(User _user) external  {
 
         require(userAddresses[msg.sender] == _user, "You cannot remove other's user's contracts");
 
@@ -50,7 +50,7 @@ contract RatingSystemFramework is Ownable {
     /// @notice Get the User contract attached to the sender
     /// @return A User contract
     /// @dev By the front-end the returned value will be an address. I use User for type safety check
-    function getMyUserContract() public view returns(User) {
+    function getMyUserContract() external view returns(User) {
 
         return userAddresses[msg.sender];
     }
@@ -58,7 +58,7 @@ contract RatingSystemFramework is Ownable {
     /// @notice Get the list of the addresses of stored User contracts 
     /// @return The list of stored Users contracts
     /// @dev Returning here a User[] would involve a loop cycle to cast address=>User
-    function getUsers() public view returns(address[] memory) {
+    function getUsers() external view returns(address[] memory) {
 
         return users.getAssets();
     }
@@ -66,7 +66,7 @@ contract RatingSystemFramework is Ownable {
     /// @notice Check if a User contract is present
     /// @param _user Contract User to check the presence
     /// @return true if _user is present
-    function isIn(User _user) public view returns(bool) {
+    function isIn(User _user) external view returns(bool) {
 
         return users.isIn(address(_user));
     }
@@ -76,7 +76,7 @@ contract RatingSystemFramework is Ownable {
 
     /// @notice Get the number of stored User contracts in this System
     /// @return The number of stored User contracts
-    function userCount() public view returns(uint) {
+    function userCount() external view returns(uint) {
 
         return users.getCount();
     }
@@ -85,7 +85,7 @@ contract RatingSystemFramework is Ownable {
     /// @param _index The index to check
     /// @return The User contract address
     /// @dev Debug function    
-    function getUserByIndex(uint _index) public view returns(User) {
+    function getUserByIndex(uint _index) external view returns(User) {
 
         return User(users.getKeyAt(_index));
     }

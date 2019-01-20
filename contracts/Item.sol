@@ -17,10 +17,11 @@ contract Item is Permissioned {
 
     // Structure to keep track of the ratings performed on this Item
     uint public ratingCount = 0;
-    mapping(uint => RatingLibrary.Rating) public ratingMap; // Unwrap di questa struttura?
+    mapping(uint => RatingLibrary.Rating) public ratingMap;
 
-    // Function to compute the final score of this Item
+    // Contract in charge to compute the final score of this Item
     RatingComputer public computer;
+
 
     constructor (bytes32 _name, address _owner, RatingComputer _computer) Permissioned(_owner) public {
 
@@ -29,7 +30,11 @@ contract Item is Permissioned {
     }
 
 
-    function rate(uint8 _score, uint _timestamp) public {
+    /// @notice Rate this Item
+    /// @param _score The score to assign to this item
+    /// @param _timestamp The timestamp of this rating (should be provided by higher level call)
+    /// @dev Check whether caller has the permission on this contract (since it's an extension of Permissioned)
+    function rate(uint8 _score, uint _timestamp) external {
 
         require(checkForPermission(msg.sender) == 0, "No permission to rate this Item");
         require(_score >= 1 && _score <= 10, "Score out of scale");
@@ -46,12 +51,19 @@ contract Item is Permissioned {
         revokePermission(msg.sender); // mettere come prima istruzione? Vedi re-entracy attack
     }
     
-    function changeComputer(RatingComputer _newComputer) public isOwner {
+
+    /// @notice Change the contract in charge to compute the final score
+    /// @param _newComputer The new computer
+    /// @dev Only contracts of RatingComputer interface are allowed
+    function changeComputer(RatingComputer _newComputer) external isOwner {
 
         computer = _newComputer;
     }
 
-    function computeRate() public view returns (uint) {
+
+    /// @notice Compute the final score of this Item using the RatingComputer's formula
+    /// @return The final score of this Item
+    function computeRate() external view returns (uint) {
 
         // Facendo così faccio 2 for: uno per crearmi l'array ed uno per calcolarci il rate finale
         // Dai test avere un secondo array con solo gli scores ed evitare questo loop l'ordine di grandezza non cambia
@@ -62,7 +74,12 @@ contract Item is Permissioned {
         return computer.compute(_scores);
     }
 
-    function getAllRatings() public view returns (uint[] memory _scores, 
+
+    /// @notice Get all the ratings information of this Item
+    /// @return _scores: the array of scores
+    /// @return _timestamps: the array of timestamps
+    /// @return _raters: the array of addresses which rated this Item
+    function getAllRatings() external view returns (uint[] memory _scores, 
                                                     uint[] memory _timestamps, 
                                                     address[] memory _raters) {
 

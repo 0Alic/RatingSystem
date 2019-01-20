@@ -6,17 +6,17 @@ import {Ownable} from "./Interfaces.sol"; //causa problemi con User is Ownable
 /// @notice This contract interface defines the methods needed by a storage data structure
 contract AssetStorage {
 
-    function insert(address a) public;
+    function insert(address _asset) public;
 
-    function remove(address a) public;
+    function remove(address _asset) public;
 
 //  function update(address a, <<what data???>>) public;
 
-    function isIn(address a) public view returns(bool);    
+    function isIn(address _asset) public view returns(bool);    
 
     function getCount() public view returns(uint);
 
-    function getAssets() public view returns(address[] memory);
+    function getAssets() external view returns(address[] memory);
 }
 
 /// @title StoragePointer
@@ -38,44 +38,66 @@ contract StoragePointer is AssetStorage {
     mapping(address => uint) assetMap;
     address[] assetIndex;
 
-    function insert(address a) public {
 
-        require(!isIn(a), "Address already stored");
+    /// @notice Insert a new asset inside this storage structure
+    /// @param _asset The asset to insert
+    /// @dev The asset should not be already present
+    function insert(address _asset) public {
 
-        uint len = assetIndex.push(a);
-        assetMap[a] = len-1;
+        require(!isIn(_asset), "Address already stored");
+
+        uint len = assetIndex.push(_asset);
+        assetMap[_asset] = len-1;
     }
 
-    function remove(address a) public {
 
-        require(isIn(a), "Address not stored");
+    /// @notice Remove an asset from this storage structure
+    /// @param _asset The asset to remove
+    /// @dev The asset should be already present; Retrieve the position of the asset inside the array; move last element inside that position and shrink array; update pointer in map
+    function remove(address _asset) public {
 
-        uint rowToDelete = assetMap[a];
+        require(isIn(_asset), "Address not stored");
+
+        uint rowToDelete = assetMap[_asset];
         address keyToMove = assetIndex[assetIndex.length-1];
         assetIndex[rowToDelete] = keyToMove;
         assetMap[keyToMove] = rowToDelete;
         assetIndex.length--;
     }
 
-    function isIn(address a) public view returns (bool) {
+
+    /// @notice Check if an asset is already present
+    /// @param _asset The asset to check the presence
+    /// @return True if the asset is present; false otherwise
+    function isIn(address _asset) public view returns (bool) {
         
         if (assetIndex.length == 0) 
             return false;
 
-        uint idx = assetMap[a];
-        return assetIndex[idx] == a;
+        uint idx = assetMap[_asset];
+        return assetIndex[idx] == _asset;
     }
 
+
+    /// @notice Get the number of assets present
+    /// @return The number of assets
     function getCount() public view returns(uint) {
 
         return assetIndex.length;
     }
 
-    function getAssets() public view returns(address[] memory) {
+
+    /// @notice Get the array of assets present
+    /// @return The array of assets
+    function getAssets() external view returns(address[] memory) {
 
         return assetIndex;
     }
 
+
+    /// @notice Get the asset at a given position
+    /// @param index The index of the asset
+    /// @return The asset
     function getKeyAt(uint index) public view returns(address) {
 
         require(index >= 0 && index < assetIndex.length);
@@ -91,13 +113,21 @@ contract OwnableCRUDStorage is StoragePointer, Ownable {
 
     constructor(address _owner) public Ownable(_owner) {}
 
-    function insert(address a) public isOwner {
 
-        super.insert(a);
+    /// @notice Insert a new asset inside this storage structure
+    /// @param _asset The asset to insert
+    /// @dev The asset should not be already present; the caller should be the owner of the contract
+    function insert(address _asset) public isOwner {
+
+        super.insert(_asset);
     }
     
-    function remove(address a) public isOwner {
 
-        super.remove(a);
+    /// @notice Remove an asset from this storage structure
+    /// @param _asset The asset to remove
+    /// @dev The asset should be already present; Retrieve the position of the asset inside the array; move last element inside that position and shrink array; update pointer in map; the caller should be the owner of the contract
+    function remove(address _asset) public isOwner {
+
+        super.remove(_asset);
     }
 }
