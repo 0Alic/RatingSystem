@@ -124,7 +124,7 @@ contract("RatingSystemFramework", accounts => {
 
 
     /////////////////
-    // Tests concerning Items and rates
+    // Tests concerning Items
     /////////////////
 
 
@@ -170,7 +170,7 @@ contract("RatingSystemFramework", accounts => {
         const computerRegistry = await ComputerRegistry.deployed();
         const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
 
-        // Retrieve item's contract instance
+        // Retrieve item's contract address
         let itemList = await bobObject.getItems();
         let deployedItemAddress = itemList[0];
 
@@ -201,6 +201,29 @@ contract("RatingSystemFramework", accounts => {
     });
     // Ok
 
+    
+    it("Dave should NOT remove Bob's Item contract", async() => {
+
+        const ratingSystem = await RatingSystem.deployed();
+        const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+        const bobObject = await User.at(bobUserAddress);
+
+        // Retrieve item's contract address
+        const itemList = await bobObject.getItems();
+        const deployedItemAddress = itemList[0];
+
+        await bobObject.deleteItem(deployedItemAddress, {from: dave}).then(assert.fail).catch(function(error) {
+            // Should fail because dave cannot remove bob's Content contract
+            assert(error.message.indexOf('revert') >= 0, 'Item ' + deployedItemAddress +  ' can be removed only by ' + bob);
+        });        
+    });
+    // Ok
+
+
+    /////////////////
+    // Tests concerning rates
+    /////////////////
+
 
     it("Should let Carl to rate " + bobItemName + " " + score + " stars", async() => {
 
@@ -211,8 +234,13 @@ contract("RatingSystemFramework", accounts => {
         const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
         const bobItem = await Item.at(bobItemAddress);
 
-        // Suppose Bob and Carl agreed in some way that Carl can rate Bob's Item
+        // Supposing Bob and Carl agreed in some way that Carl can rate Bob's Item
         await bobItem.grantPermission(carl, {from: bob});
+
+        // Check policy's flag of Carl
+        const carlPolicy = await bobItem.getMyPolicy({from: carl});
+        assert.equal(carlPolicy._granted, true, "Carl should have its policy term equal to true");
+
         // It's possible to rate in two ways:
             // Being owner of a User contract, and call the function rate() from your own User contract to keep track of your ratings
             // Being an external owned account (OWA) and rate directly from Bob's Item contract
@@ -223,10 +251,15 @@ contract("RatingSystemFramework", accounts => {
         
         // Check item's ratings
         const ratingBundle = await bobItem.getAllRatings();
-        assert.equal(ratingBundle._scores[0], score, "The score should be 5");
-        assert.equal(ratingBundle._timestamps[0], timestamp, "The timestamp should be 1");
+        assert.equal(await bobItem.ratingCount(), 1, bobItemName + " should have only 1 rating");
+        assert.equal(ratingBundle._scores.length, 1, bobItemName + " should have only 1 score");
+        assert.equal(ratingBundle._timestamps.length, 1, bobItemName + " should have only 1 timestamp");
+        assert.equal(ratingBundle._raters.length, 1, bobItemName + " should have only 1 rater");
+        assert.equal(ratingBundle._scores[0], score, "The score should be " + score);
+        assert.equal(ratingBundle._timestamps[0], timestamp, "The timestamp should be " + timestamp);
         assert.equal(ratingBundle._raters[0], carl, "The rater should be Carl: " + carl);
     });
+    // Ok
 
 
     it("Should not let Carl to rate again", async() => {
@@ -246,6 +279,7 @@ contract("RatingSystemFramework", accounts => {
         // Check that the number of ratings of Bob's Item is still 1
         assert.equal(await bobItem.ratingCount(), 1, bobItemName + " should have only 1 rating");
     });
+    // Ok
 
 
     it("Should check the revokePermission() from Bob to Carl", async() => {
@@ -262,6 +296,10 @@ contract("RatingSystemFramework", accounts => {
         // Suppose Bob decided to revoke Carl's permission for some reason
         await bobItem.revokePermission(carl, {from: bob});
 
+        // Check policy's flag of Carl
+        const carlPolicy = await bobItem.getMyPolicy({from: carl});
+        assert.equal(carlPolicy._granted, false, "Carl should have its policy term equal to false");
+
         // Carl tries to rate anyway
         await bobItem.rate(score, timestamp, {from: carl}).then(assert.fail).catch(function(error) {
             // Should fail because Carl has no permission to rate
@@ -271,6 +309,7 @@ contract("RatingSystemFramework", accounts => {
         // Check that the number of ratings of Bob's Item is still 1
         assert.equal(await bobItem.ratingCount(), 1, bobItemName + " should have only 1 rating");
     });
+    // Ok
 
 
     it("Should avoid bugs in grantPermission() and revokePermission()", async() => {
@@ -284,6 +323,10 @@ contract("RatingSystemFramework", accounts => {
 
         // Suppose Bob and Carl agreed in some way that Carl can rate Bob's Item
         await bobItem.grantPermission(carl, {from: bob});
+
+        // Check policy's flag of Carl
+        let carlPolicy = await bobItem.getMyPolicy({from: carl});
+        assert.equal(carlPolicy._granted, true, "Carl should have its policy term equal to true");
 
         // Dave tries to revoke Carl's permissions
         await bobItem.revokePermission(carl, {from: dave}).then(assert.fail).catch(function(error) {
@@ -302,10 +345,19 @@ contract("RatingSystemFramework", accounts => {
             // Should fail because Carl has no permission to rate
             assert(error.message.indexOf('revert') >= 0, 'Dave ' + dave +  ' cannot grant permission to Alice on ' + bobItemName);
         });
+
+        // Check policy's flag of alice/dave/carl
+        const alicePolicy = await bobItem.getMyPolicy({from: alice});
+        const davePolicy = await bobItem.getMyPolicy({from: dave});
+        carlPolicy = await bobItem.getMyPolicy({from: carl});
+        assert.equal(alicePolicy._granted, false, "Alice should have its policy term equal to false");
+        assert.equal(davePolicy._granted, false, "Dave should have its policy term equal to false");
+        assert.equal(carlPolicy._granted, true, "Carl should have its policy term equal to true");
     });
+    // Ok
     
 
-    it("Should test the RatingComputer contract for " + bobItemName , async() => {
+    it("Should test the SimpleAverageComputer contract for " + bobItemName , async() => {
 
         const ratingSystem = await RatingSystem.deployed();
         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
@@ -336,11 +388,17 @@ contract("RatingSystemFramework", accounts => {
             bobItem.rate(rating.score, rating.timestamp, {from: rating.rater});
         });
 
+        // Check the number of registered ratings is ok
         assert.equal(await bobItem.ratingCount(), ratings.length+1, bobItemName + " should have " + (ratings.length+1) + " ratings");
 
-        // Compute the rating
+        // Compute the final score
         expectedScore = Math.floor(expectedScore/(ratings.length+1)); // Solidity truncates uint
-
+        // Check final score
         assert.equal(await bobItem.computeRate(), expectedScore, bobItemName + " should have an average score of " + expectedScore);
+    });
+    // Ok
+
+    it("Should do something else useful", async() => {
+
     });
 });
