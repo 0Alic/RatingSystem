@@ -25,6 +25,17 @@ contract("RatingSystemFramework", accounts => {
     /////////////////
 
 
+    it("Should test RatingSystemFramework and ComputerRegistry ownership", async() => {
+
+        const ratingSystem = await RatingSystem.deployed();
+        const computerRegistry = await ComputerRegistry.deployed();
+
+        assert.equal(await ratingSystem.owner(), alice, "The owner of RatingSystemFramework should be " + alice);
+        assert.equal(await computerRegistry.owner(), alice, "The owner of ComputerRegistry should be " + alice);
+    });
+    // Ok
+
+
     it("Should create a user called " + bobName, async() => {
 
         const ratingSystem = await RatingSystem.deployed();
@@ -32,44 +43,71 @@ contract("RatingSystemFramework", accounts => {
         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
         const bobObject = await User.at(bobUserAddress);
 
-        // Check ownership
+        // Check ownership and name
         const owner = await bobObject.owner();
+        const name = await bobObject.name();
         assert.equal(bob, owner, "The owner is not " + bobName);
+        assert.equal(web3.utils.toUtf8(name), bobName, "The User's name should be " + bobName);
+
+        // Check User's data inside RatingSystemFramework
+        let userList = [];
+        userList.push(bobUserAddress);
+        assert.equal(await ratingSystem.userCount(), 1, "The RatingSystemFramework should have 1 User stored");
+        assert.deepEqual(await ratingSystem.getUsers(), userList, "The RatingSystemFramework should have this list of Users: " + userList);
+        assert.equal(await ratingSystem.isIn(bobUserAddress), true, bobUserAddress + " should belong to RatingSystemFramework");
     });
+    // Ok
 
 
     it("Should remove and insert again " + bobName, async() => {
 
         const ratingSystem = await RatingSystem.deployed();
-        const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
-        const bobObject = await User.at(bobUserAddress);
-        await ratingSystem.deleteUser(bobObject.address, {from: bob});
-        await ratingSystem.createUser(web3.utils.fromUtf8(bobName), {from: bob});
         
-        const userList = await ratingSystem.getUsers();
-        let nameList = []
-        for(let i=0; i<userList.length; i++) { // for each non funziona :|
-            const user = userList[i];            
-            const userObject = await User.at(user);
-            const bytes = await userObject.name();
-            const name = web3.utils.toUtf8(bytes);
-            nameList.push(name);
-        }
-
-        assert.equal(userList.length, 1, "The user list should be only 1 element long");
-        assert.equal(nameList[0], bobName, "The user list should contain only Bob");
+        // Remove User contract Bob
+        let bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+        let bobObject = await User.at(bobUserAddress);
+        await ratingSystem.deleteUser(bobObject.address, {from: bob});
+        
+        // Test RatingSystemFramework state after removal
+        assert.equal(await ratingSystem.userCount(), 0, "The RatingSystemFramework should have no User stored");
+        assert.deepEqual(await ratingSystem.getUsers(), [], "The RatingSystemFramework should have empty list of Users");
+        assert.equal(await ratingSystem.isIn(bobUserAddress), false, bobUserAddress + " should NOT belong to RatingSystemFramework");
+        
+        // Add again a new User contract created by Bob
+        await ratingSystem.createUser(web3.utils.fromUtf8(bobName), {from: bob});
+        bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+        bobObject = await User.at(bobUserAddress);
+        // Check ownership and name
+        const owner = await bobObject.owner();
+        const name = await bobObject.name();
+        assert.equal(bob, owner, "The owner is not " + bobName);
+        assert.equal(web3.utils.toUtf8(name), bobName, "The User's name should be " + bobName);
+        // Check User's data inside RatingSystemFramework
+        let userList = [];
+        userList.push(bobUserAddress);
+        assert.equal(await ratingSystem.userCount(), 1, "The RatingSystemFramework should have 1 User stored");
+        assert.deepEqual(await ratingSystem.getUsers(), userList, "The RatingSystemFramework should have this list of Users: " + userList);
+        assert.equal(await ratingSystem.isIn(bobUserAddress), true, bobUserAddress + " should belong to RatingSystemFramework");
     });
+    // Ok
 
 
-    it("Should NOT insert duplicate Users in the Storage contract", async() => {
+    it("Should NOT insert duplicate Users / remove non-User in the Storage contract", async() => {
 
         const ratingSystem = await RatingSystem.deployed();
+        bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
 
         await ratingSystem.createUser(web3.utils.fromUtf8(bobName+"2"), {from: bob}).then(assert.fail).catch(function(error) {
             // Should fail because User "bob" is already registered inside RatingSystem
             assert(error.message.indexOf('revert') >= 0, 'User ' + bob +  ' already registerd');
-        });        
+        });
+
+        await ratingSystem.deleteUser(dave, {from: dave}).then(assert.fail).catch(function(error) {
+            // Should fail because dave is not an User contract address
+            assert(error.message.indexOf('revert') >= 0, 'User ' + dave +  ' does not exist');
+        });
     });
+    // Ok
 
 
     it("Dave should NOT remove Bob's User contract", async() => {
@@ -78,10 +116,11 @@ contract("RatingSystemFramework", accounts => {
         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
 
         await ratingSystem.deleteUser(bobUserAddress, {from: dave}).then(assert.fail).catch(function(error) {
-            // Should fail because User "bob" is already registered inside RatingSystem
+            // Should fail because dave cannot remove bob's User contract
             assert(error.message.indexOf('revert') >= 0, 'User ' + bobUserAddress +  ' can be removed only by ' + bob);
         });        
     });
+    // Ok
 
 
     /////////////////
@@ -91,23 +130,76 @@ contract("RatingSystemFramework", accounts => {
 
     it("Should create an item called " + bobItemName + " for " + bobName, async() => {
 
-        // Retrieve bob's User contract instance        
+        // Retrieve bob's User contract instance
         const ratingSystem = await RatingSystem.deployed();
         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
         const bobObject = await User.at(bobUserAddress);
+
         // Retrieve ComputerRegistry and the address of the simple average computer
         const computerRegistry = await ComputerRegistry.deployed();
         const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
+
         // Create Item for bob
         const tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), computerAddress, {from: bob});
+
         // Retrieve item's contract instance
         const itemList = await bobObject.getItems();
         const deployedItemAddress = itemList[0];
         const itemObject = await Item.at(deployedItemAddress);
 
-        const itemName = web3.utils.toUtf8(await itemObject.name())
+        // Check correctness of Item creation flow
+        const itemName = web3.utils.toUtf8(await itemObject.name());
+        const expectedItemList = [deployedItemAddress];
         assert.equal(itemName, bobItemName, "The item is not " + bobItemName);
+        assert.equal(await itemObject.owner(), bob, "The owner of " + bobItemName + " should be " + bob);
+        assert.equal(await bobObject.itemCount(), 1, "User " + bobUserAddress + " should have only 1 deployed Item");
+        assert.deepEqual(await bobObject.getItems(), expectedItemList, "User " + bobUserAddress + " should have this list of Items: " + expectedItemList);
+        assert.equal(await bobObject.isIn(deployedItemAddress), true, deployedItemAddress + " should belong to User " + bobUserAddress);
     }); 
+    // Ok
+
+
+    it("Should remove and insert again " + bobItemName, async() => {
+
+        // Retrieve bob's User contract instance
+        const ratingSystem = await RatingSystem.deployed();
+        const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+        const bobObject = await User.at(bobUserAddress);
+
+        // Retrieve ComputerRegistry and the address of the simple average computer
+        const computerRegistry = await ComputerRegistry.deployed();
+        const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
+
+        // Retrieve item's contract instance
+        let itemList = await bobObject.getItems();
+        let deployedItemAddress = itemList[0];
+
+        // Remove "Bob's content"
+        let tx = await bobObject.deleteItem(deployedItemAddress, {from: bob});
+
+        // Test bob's User contract state after removal
+        assert.equal(await bobObject.itemCount(), 0, "Bob's user contract should have no Item stored");
+        assert.deepEqual(await bobObject.getItems(), [], "Bob's user contract should have empty list of Item");
+        assert.equal(await bobObject.isIn(deployedItemAddress), false, deployedItemAddress + " should NOT belong to bob's User contract");
+
+        // Insert again bob's content
+        tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), computerAddress, {from: bob});
+
+        // Retrieve item's contract instance
+        itemList = await bobObject.getItems();
+        deployedItemAddress = itemList[0];
+        const itemObject = await Item.at(deployedItemAddress);
+
+        // Check correctness of Item creation flow
+        const itemName = web3.utils.toUtf8(await itemObject.name());
+        const expectedItemList = [deployedItemAddress];
+        assert.equal(itemName, bobItemName, "The item is not " + bobItemName);
+        assert.equal(await itemObject.owner(), bob, "The owner of " + bobItemName + " should be " + bob);
+        assert.equal(await bobObject.itemCount(), 1, "User " + bobUserAddress + " should have only 1 deployed Item");
+        assert.deepEqual(await bobObject.getItems(), expectedItemList, "User " + bobUserAddress + " should have this list of Items: " + expectedItemList);
+        assert.equal(await bobObject.isIn(deployedItemAddress), true, deployedItemAddress + " should belong to User " + bobUserAddress);
+    });
+    // Ok
 
 
     it("Should let Carl to rate " + bobItemName + " " + score + " stars", async() => {
