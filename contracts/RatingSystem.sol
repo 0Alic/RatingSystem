@@ -1,4 +1,4 @@
-pragma solidity 0.5.0;
+pragma solidity < 0.5.3;
 
 import "./User.sol";
 import "./Item.sol";

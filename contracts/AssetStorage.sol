@@ -1,4 +1,4 @@
-pragma solidity 0.5.0;
+pragma solidity  < 0.5.3;
 
 import {Ownable} from "./Interfaces.sol"; //causa problemi con User is Ownable
 

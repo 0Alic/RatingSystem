@@ -1,4 +1,4 @@
-pragma solidity 0.5.0;
+pragma solidity < 0.5.3;
 
 import "./Interfaces.sol";
 import "./AssetStorage.sol";
@@ -48,6 +48,24 @@ contract User is Ownable {
     }
 
 
+    /// @notice Creates an Item with a name
+    /// @param _name the name of the Item to create
+    /// @param _computer The RatingComputer to attach for the computation of the final score of this Item
+    function createItem(bytes32 _name, RatingComputer _computer) external isOwner {
+
+        Item item = new Item(_name, owner, _computer);
+        items.insert(address(item));
+    }
+
+
+    /// @notice Removes the Item
+    /// @param _item the address of the Item to remove
+    function deleteItem(Item _item) external isOwner {
+
+        items.remove(address(_item));
+    }
+
+
     /// @notice Get all the ratings information connected to this Item
     /// @return _scores: the array of scores
     /// @return _timestamps: the array of timestamps
@@ -66,24 +84,6 @@ contract User is Ownable {
             _timestamps[i] = ratingMap[i].timestamp;
             _rated[i] = ratingMap[i].rated;
         }
-    }
-
-
-    /// @notice Creates an Item with a name
-    /// @param _name the name of the Item to create
-    /// @param _computer The RatingComputer to attach for the computation of the final score of this Item
-    function createItem(bytes32 _name, RatingComputer _computer) external isOwner {
-
-        Item item = new Item(_name, owner, _computer);
-        items.insert(address(item));
-    }
-
-
-    /// @notice Removes the Item
-    /// @param _item the address of the Item to remove
-    function deleteItem(Item _item) external isOwner {
-
-        items.remove(address(_item));
     }
 
 

@@ -1,4 +1,4 @@
-pragma solidity 0.5.0;
+pragma solidity < 0.5.3;
 
 /// @title Ownable
 /// @notice This contract keeps the information of its owner, passed as parameter to the constructor. It provides a modifier to let only the owner to pass its guard

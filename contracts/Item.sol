@@ -1,4 +1,4 @@
-pragma solidity 0.5.0;
+pragma solidity < 0.5.3;
 
 import "./Interfaces.sol";
 import "./RatingComputer.sol";
@@ -39,16 +39,15 @@ contract Item is Permissioned {
         require(checkForPermission(msg.sender) == 0, "No permission to rate this Item");
         require(_score >= 1 && _score <= 10, "Score out of scale");
 
+        revokePermission(msg.sender);
+
         ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true,
                                                         score: _score,
                                                         timestamp: _timestamp,
                                                         rater: msg.sender,
                                                         rated: address(this) });
         
-
-
         ratingCount++;
-        revokePermission(msg.sender); // mettere come prima istruzione? Vedi re-entracy attack
     }
     
 
