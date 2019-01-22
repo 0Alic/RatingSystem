@@ -1,4 +1,4 @@
-pragma solidity  < 0.5.3;
+pragma solidity  ^0.5.0;
 
 import {Ownable} from "./Interfaces.sol"; //causa problemi con User is Ownable
 
@@ -14,7 +14,7 @@ contract AssetStorage {
 
     function isIn(address _asset) public view returns(bool);    
 
-    function getCount() public view returns(uint);
+    function getCount() external view returns(uint);
 
     function getAssets() external view returns(address[] memory);
 }
@@ -81,7 +81,7 @@ contract StoragePointer is AssetStorage {
 
     /// @notice Get the number of assets present
     /// @return The number of assets
-    function getCount() public view returns(uint) {
+    function getCount() external view returns(uint) {
 
         return assetIndex.length;
     }
@@ -98,7 +98,7 @@ contract StoragePointer is AssetStorage {
     /// @notice Get the asset at a given position
     /// @param index The index of the asset
     /// @return The asset
-    function getKeyAt(uint index) public view returns(address) {
+    function getKeyAt(uint index) external view returns(address) {
 
         require(index >= 0 && index < assetIndex.length);
         return assetIndex[index];

@@ -1,4 +1,4 @@
-pragma solidity < 0.5.3;
+pragma solidity ^0.5.0;
 
 /// @title Ownable
 /// @notice This contract keeps the information of its owner, passed as parameter to the constructor. It provides a modifier to let only the owner to pass its guard
@@ -19,7 +19,7 @@ contract Ownable {
 
     /// @notice This function provides the possibility to change the owner
     /// @param _to The new owner of this contract 
-    function changeOwner(address _to) public isOwner {
+    function changeOwner(address _to) external isOwner {
 
         owner = _to;
     }
@@ -39,7 +39,7 @@ contract Permissioned is Ownable {
 
     // For each address we have a PermissionPolicy defined
     mapping(address => PermissionPolicy) public permissionMap;
-    uint public interval = 4 weeks; 
+    uint constant interval = 4 weeks; 
 
 
     constructor (address _owner) Ownable(_owner) public {}
@@ -48,7 +48,7 @@ contract Permissioned is Ownable {
     /// @notice Grant the permission to access to this contract to a certain address (contract or OWA)
     /// @param _to The address meant to have permission
     /// @dev The owner of this contract cannot grant permission to itself 
-    function grantPermission(address _to) public isOwner {
+    function grantPermission(address _to) external isOwner {
 
         require(_to != owner, "The owner cannot grant permission to himself");
 
@@ -86,7 +86,7 @@ contract Permissioned is Ownable {
     /// @notice Get current permission policy of the caller
     /// @return _deadline: the deadline period (timestamp)
     /// @return _granted: the flag "permission granted"
-    function getMyPolicy() public view returns(uint _deadline, bool _granted) {
+    function getMyPolicy() external view returns(uint _deadline, bool _granted) {
 
         _deadline = permissionMap[msg.sender].periodStart + interval;
         _granted = permissionMap[msg.sender].granted;

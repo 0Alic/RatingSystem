@@ -1,4 +1,4 @@
-pragma solidity < 0.5.3;
+pragma solidity ^0.5.0;
 
 import "./User.sol";
 import "./Item.sol";
@@ -32,8 +32,8 @@ contract RatingSystemFramework is Ownable {
         require(address(userAddresses[msg.sender]) == address(0x0), "This address has already a User registered");
 
         User user = new User(_name, msg.sender);
-        users.insert(address(user));
         userAddresses[msg.sender] = user;
+        users.insert(address(user));
     }
 
     /// @notice Removes a User
@@ -43,8 +43,8 @@ contract RatingSystemFramework is Ownable {
 
         require(userAddresses[msg.sender] == _user, "You cannot remove other's user's contracts");
 
-        users.remove(address(_user));
         delete userAddresses[msg.sender];
+        users.remove(address(_user));
     }
 
     /// @notice Get the User contract attached to the sender
