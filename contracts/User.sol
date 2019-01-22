@@ -37,14 +37,13 @@ contract User is Ownable {
     /// @param _timestamp The timestamp of the rating (should be provided by higher level call)
     function rate(Item _item, uint8 _score, uint _timestamp) external isOwner {
 
-        _item.rate(_score, _timestamp);
-
         ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true,
                                                         score: _score,
                                                         timestamp: _timestamp,
                                                         rater: address(this),
                                                         rated: address(_item) });
         ratingCount++;
+        _item.rate(_score, _timestamp);
     }
 
 
