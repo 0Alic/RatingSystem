@@ -5,15 +5,14 @@
 
 |  File Name  |  SHA-1 Hash  |
 |-------------|--------------|
-| AssetStorage.sol | 6e546866d450e637cdcbdbe836c06dbeb4b75521 |
-| ComputerRegistry.sol | 45bbfc801c4064f5bb8fcf1644499ca044a49944 |
-| Interfaces.sol | 4918ab6c3787410948e4d0306d40d1ff3babff8b |
-| Item.sol | cf8825ea3b272d1658bfa6d132c07f5df41348f8 |
-| Migrations.sol | b6732a145e4cb6841945488f591b1cf383a6441e |
-| RatingComputer.sol | 44a06e45a7b6ae5a8c3b159350ef1ed0eeb86fae |
-| RatingLibrary.sol | 8269591bc95b008c507d2f48c9a82c8ef6856922 |
-| RatingSystem.sol | e90b5172a026f76d60ef8b6471bf35056b9d8913 |
-| User.sol | bea6569bc01770d126d5ee3a4f46d63124f51844 |
+| AssetStorage.sol | 4a3c4a1002a08882b80d2168ae76247cce82fb1a |
+| ComputerRegistry.sol | 8f1f06ff541537ba65a71877fc825399d94e3eb0 |
+| Interfaces.sol | 0bd6aea560fe9f7965387dc314fafad50875aecb |
+| Item.sol | 6eb11fd7896587f88f7bd408526995fbcfaf2ecb |
+| RatingComputer.sol | ba4dbd0519fc4f9c0640638d04d36d8656da3297 |
+| RatingLibrary.sol | a9f979023d665a56fa0453876ceba6879406561b |
+| RatingSystem.sol | 5af40a19077147ed803577530767d08ebab5614c |
+| User.sol | 32db2050c0cbe2f86103aa7970968fadddd7b1d6 |
 
 
 ### Contracts Description Table
@@ -27,16 +26,16 @@
 | └ | insert | Public ❗️ | 🛑  | |
 | └ | remove | Public ❗️ | 🛑  | |
 | └ | isIn | Public ❗️ |   | |
-| └ | getCount | Public ❗️ |   | |
+| └ | getCount | External ❗️ |   | |
 | └ | getAssets | External ❗️ |   | |
 ||||||
 | **StoragePointer** | Implementation | AssetStorage |||
 | └ | insert | Public ❗️ | 🛑  | |
 | └ | remove | Public ❗️ | 🛑  | |
 | └ | isIn | Public ❗️ |   | |
-| └ | getCount | Public ❗️ |   | |
+| └ | getCount | External ❗️ |   | |
 | └ | getAssets | External ❗️ |   | |
-| └ | getKeyAt | Public ❗️ |   | |
+| └ | getKeyAt | External ❗️ |   | |
 ||||||
 | **OwnableCRUDStorage** | Implementation | StoragePointer, Ownable |||
 | └ | \<Constructor\> | Public ❗️ | 🛑  | Ownable |
@@ -51,14 +50,14 @@
 ||||||
 | **Ownable** | Implementation |  |||
 | └ | \<Constructor\> | Public ❗️ | 🛑  | |
-| └ | changeOwner | Public ❗️ | 🛑  | isOwner |
+| └ | changeOwner | External ❗️ | 🛑  | isOwner |
 ||||||
 | **Permissioned** | Implementation | Ownable |||
 | └ | \<Constructor\> | Public ❗️ | 🛑  | Ownable |
-| └ | grantPermission | Public ❗️ | 🛑  | isOwner |
+| └ | grantPermission | External ❗️ | 🛑  | isOwner |
 | └ | revokePermission | Public ❗️ | 🛑  | |
 | └ | checkForPermission | Public ❗️ |   | |
-| └ | getMyPolicy | Public ❗️ |   | |
+| └ | getMyPolicy | External ❗️ |   | |
 ||||||
 | **Item** | Implementation | Permissioned |||
 | └ | \<Constructor\> | Public ❗️ | 🛑  | Permissioned |
@@ -66,11 +65,6 @@
 | └ | changeComputer | External ❗️ | 🛑  | isOwner |
 | └ | computeRate | External ❗️ |   | |
 | └ | getAllRatings | External ❗️ |   | |
-||||||
-| **Migrations** | Implementation |  |||
-| └ | \<Constructor\> | Public ❗️ | 🛑  | |
-| └ | setCompleted | Public ❗️ | 🛑  | restricted |
-| └ | upgrade | Public ❗️ | 🛑  | restricted |
 ||||||
 | **RatingComputer** | Interface |  |||
 | └ | compute | External ❗️ |   | |
@@ -95,7 +89,6 @@
 ||||||
 | **User** | Implementation | Ownable |||
 | └ | \<Constructor\> | Public ❗️ | 🛑  | Ownable |
-| └ | rate | External ❗️ | 🛑  | isOwner |
 | └ | createItem | External ❗️ | 🛑  | isOwner |
 | └ | deleteItem | External ❗️ | 🛑  | isOwner |
 | └ | getAllRatings | External ❗️ |   | |

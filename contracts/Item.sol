@@ -60,9 +60,10 @@ contract Item is Permissioned {
     }
 
 
-    /// @notice Compute the final score of this Item using the RatingComputer's formula
+    /// @notice Compute the final score
+    /// @param _computer The RatingComputer to use to compute the final score
     /// @return The final score of this Item
-    function computeRate() external view returns (uint) {
+    function computeRate(RatingComputer _computer) external view returns (uint) {
 
         // Facendo così faccio 2 for: uno per crearmi l'array ed uno per calcolarci il rate finale
         // Dai test avere un secondo array con solo gli scores ed evitare questo loop l'ordine di grandezza non cambia
@@ -70,7 +71,7 @@ contract Item is Permissioned {
         for(uint i=0; i<ratingCount; i++) {
             _scores[i] = ratingMap[i].score;
         }
-        return computer.compute(_scores);
+        return _computer.compute(_scores);
     }
 
 

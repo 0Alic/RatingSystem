@@ -31,20 +31,21 @@ contract User is Ownable {
     }
 
 
-    /// @notice Function to call to rate an Item and keep track of the rating
-    /// @param _item The Item to rate
-    /// @param _score The score to assign to that Item
-    /// @param _timestamp The timestamp of the rating (should be provided by higher level call)
-    function rate(Item _item, uint8 _score, uint _timestamp) external isOwner {
+    
+    // /// @notice Function to call to rate an Item and keep track of the rating
+    // /// @param _item The Item to rate
+    // /// @param _score The score to assign to that Item
+    // /// @param _timestamp The timestamp of the rating (should be provided by higher level call)
+    // function rate(Item _item, uint8 _score, uint _timestamp) external isOwner {
 
-        ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true,
-                                                        score: _score,
-                                                        timestamp: _timestamp,
-                                                        rater: address(this),
-                                                        rated: address(_item) });
-        ratingCount++;
-        _item.rate(_score, _timestamp);
-    }
+    //     ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true,
+    //                                                     score: _score,
+    //                                                     timestamp: _timestamp,
+    //                                                     rater: address(this),
+    //                                                     rated: address(_item) });
+    //     ratingCount++;
+    //     _item.rate(_score, _timestamp);
+    // }
 
 
     /// @notice Creates an Item with a name

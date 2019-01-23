@@ -4,7 +4,7 @@ const User = artifacts.require("User");
 const Item = artifacts.require("Item");
 const ComputerRegistry = artifacts.require("ComputerRegistry");
 
-contract("RatingSystem", accounts => {
+contract("RatingSystemFramework: Stresstest", accounts => {
 
     const alice = accounts[1]; // System creator
     const bob = accounts[3];   // User of the System
