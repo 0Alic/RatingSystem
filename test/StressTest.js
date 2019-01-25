@@ -52,7 +52,8 @@ contract("RatingSystemFramework: Stresstest", accounts => {
     
             const ratingSystem = await RatingSystem.deployed();
     
-            const computerRegistry = await ComputerRegistry.deployed();
+            const computerRegistryAddress = await ratingSystem.computerRegistry();
+            const computerRegistry = await ComputerRegistry.at(computerRegistryAddress);
             const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
     
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});

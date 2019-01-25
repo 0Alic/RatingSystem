@@ -36,7 +36,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
         const computerRegistry = await ComputerRegistry.at(computerRegistryAddress);
 
         assert.equal(await ratingSystem.owner(), alice, "The owner of RatingSystemFramework should be " + alice);
-        assert.equal(await computerRegistry.owner(), alice, "The owner of the ComputerRegistry should be " + alice)
+        assert.equal(await computerRegistry.owner(), alice, "The owner of the ComputerRegistry should be " + alice);
     });
     // Ok
 

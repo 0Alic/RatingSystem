@@ -96,6 +96,8 @@ contract Item is Permissioned {
         }   
     }
 
+    /// @notice Get the number of ratings performed on this Item
+    /// @return The number of ratings
     function ratingCount() external view returns(uint) {
 
         return ratingMap.length;
