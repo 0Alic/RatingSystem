@@ -4,11 +4,13 @@ import "./User.sol";
 import "./Item.sol";
 import "./Interfaces.sol";
 import "./AssetStorage.sol";
+import "./ComputerRegistry.sol";
 
 /// @title RatingSystemFramework
 /// @notice This contract is the top stack actor, it interfaces with the users providing methods to insert/remove users
 contract RatingSystemFramework is Ownable {
 
+    ComputerRegistry public computerRegistry;       // This is the registry for the computer contracts
     OwnableCRUDStorage private users;               // This manage that removal of User won't leave gaps in the array
     mapping(address => User) private userAddresses; // This to ensure that a single account can instantiate only a single User contract
     //
@@ -21,7 +23,8 @@ contract RatingSystemFramework is Ownable {
     /// @dev The constructor simply calls the Ownable constructor to store the owner which is the creator of this contract
     constructor () Ownable(msg.sender) public {
 
-        users = new OwnableCRUDStorage(address(this)); // non va bene msg.sender....
+        computerRegistry = new ComputerRegistry(msg.sender);    // The owner of RatingSystemFramework is the owner of the Registry
+        users = new OwnableCRUDStorage(address(this));          // Because (this) should interact with the storage
     }
 
     /// @notice creates a User with an username

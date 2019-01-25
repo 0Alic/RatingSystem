@@ -32,10 +32,11 @@ contract("RatingSystemFramework: correctness test", accounts => {
     it("Should test RatingSystemFramework and ComputerRegistry ownership", async() => {
 
         const ratingSystem = await RatingSystem.deployed();
-        const computerRegistry = await ComputerRegistry.deployed();
+        const computerRegistryAddress = await ratingSystem.computerRegistry();
+        const computerRegistry = await ComputerRegistry.at(computerRegistryAddress);
 
         assert.equal(await ratingSystem.owner(), alice, "The owner of RatingSystemFramework should be " + alice);
-        assert.equal(await computerRegistry.owner(), alice, "The owner of ComputerRegistry should be " + alice);
+        assert.equal(await computerRegistry.owner(), alice, "The owner of the ComputerRegistry should be " + alice)
     });
     // Ok
 
@@ -151,7 +152,8 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const bobObject = await User.at(bobUserAddress);
     
             // Retrieve ComputerRegistry and the address of the simple average computer
-            const computerRegistry = await ComputerRegistry.deployed();
+            const computerRegistryAddress = await ratingSystem.computerRegistry();
+            const computerRegistry = await ComputerRegistry.at(computerRegistryAddress);
             const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
     
             // Create Item for bob
@@ -182,7 +184,8 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const bobObject = await User.at(bobUserAddress);
     
             // Retrieve ComputerRegistry and the address of the simple average computer
-            const computerRegistry = await ComputerRegistry.deployed();
+            const computerRegistryAddress = await ratingSystem.computerRegistry();
+            const computerRegistry = await ComputerRegistry.at(computerRegistryAddress);
             const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
     
             // Retrieve item's contract address

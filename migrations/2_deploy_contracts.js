@@ -17,16 +17,11 @@ module.exports = function(deployer, network, accounts) {
             const carl = accounts[0];  // Rater user
     
             const system = await deployer.deploy(Framework, {from: alice});
-            const computerRegistry = await deployer.deploy(ComputerRegistry, {from: alice});
-            const simpleAvgComputer = await deployer.deploy(SimpleComputer, {from: alice});
-    
-            computerRegistry.pushComputer(simpleAvgComputer.address, web3.utils.fromUtf8("Simple Average"),{from: alice})
         }
         else if(network=="ropsten") {
 
             // Deploy on ropsten
             await deployer.deploy(Framework);
-            await deployer.deploy(ComputerRegistry);
         }
         else {
             // Define other networks

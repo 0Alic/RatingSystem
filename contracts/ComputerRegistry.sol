@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
 import {Ownable} from "./Interfaces.sol";
-import "./RatingComputer.sol";
+import {RatingComputer, SimpleAvarageComputer} from "./RatingComputer.sol";
 
 /// @title ComputerRegistry
 /// @notice This contracts stores a list of RatingComputers. An Item can pick from this registry the computer it wants to use to compute its final score
@@ -10,7 +10,13 @@ contract ComputerRegistry is Ownable {
     RatingComputer[] private registry;
     bytes32[] private ids;
 
-    constructor() Ownable(msg.sender) public {}
+    constructor(address _owner) Ownable(_owner) public {
+
+        // Init the registry with a simple average computer
+        RatingComputer _initPC = new SimpleAvarageComputer();
+        registry.push(_initPC);
+        ids.push(0x53696d706c654176657261676500000000000000000000000000000000000000); // "Simple Average"
+    }
 
     /// @notice Add a new RatingComputer to the registry, only if the caller is the owner of this registry (avoid spam)
     /// @param _computer The computer to add

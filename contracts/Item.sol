@@ -16,8 +16,7 @@ contract Item is Permissioned {
     bytes32 public name;
 
     // Structure to keep track of the ratings performed on this Item
-    uint public ratingCount = 0;
-    mapping(uint => RatingLibrary.Rating) public ratingMap;
+    RatingLibrary.Rating[] public ratingMap;
 
     // Contract in charge to compute the final score of this Item
     RatingComputer public computer;
@@ -41,13 +40,11 @@ contract Item is Permissioned {
 
         revokePermission(msg.sender);
 
-        ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true,
-                                                        score: _score,
-                                                        timestamp: _timestamp,
-                                                        rater: msg.sender,
-                                                        rated: address(this) });
-        
-        ratingCount++;
+        ratingMap.push(RatingLibrary.Rating({isValid: true,
+                                            score: _score,
+                                            timestamp: _timestamp,
+                                            rater: msg.sender,
+                                            rated: address(this) }));
     }
     
 
@@ -64,6 +61,8 @@ contract Item is Permissioned {
     /// @param _computer The RatingComputer to use to compute the final score
     /// @return The final score of this Item
     function computeRate(RatingComputer _computer) external view returns (uint) {
+
+        uint ratingCount = ratingMap.length;
 
         // Facendo così faccio 2 for: uno per crearmi l'array ed uno per calcolarci il rate finale
         // Dai test avere un secondo array con solo gli scores ed evitare questo loop l'ordine di grandezza non cambia
@@ -83,6 +82,8 @@ contract Item is Permissioned {
                                                     uint[] memory _timestamps, 
                                                     address[] memory _raters) {
 
+        uint ratingCount = ratingMap.length;
+
         _scores = new uint[](ratingCount);
         _timestamps = new uint[](ratingCount);
         _raters = new address[](ratingCount);
@@ -93,6 +94,11 @@ contract Item is Permissioned {
             _timestamps[i] = ratingMap[i].timestamp;
             _raters[i] = ratingMap[i].rater;
         }   
-    }    
+    }
+
+    function ratingCount() external view returns(uint) {
+
+        return ratingMap.length;
+    }
 
 }

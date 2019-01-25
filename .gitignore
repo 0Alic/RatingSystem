@@ -6,3 +6,6 @@
 Schema.mdj
 costi
 ropsten.json
+
+.doxityrc
+/scripts/**
