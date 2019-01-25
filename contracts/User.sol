@@ -20,6 +20,8 @@ contract User is Ownable {
     uint public ratingCount = 0;    
     mapping(uint => RatingLibrary.Rating) public ratingMap;
 
+    event ItemCreated(Item _itemContract);
+
 
     /// @param _name the username of the User
     /// @param _owner the address of the User
@@ -55,6 +57,8 @@ contract User is Ownable {
 
         Item item = new Item(_name, owner, _computer);
         items.insert(address(item));
+
+        emit ItemCreated(item);
     }
 
 

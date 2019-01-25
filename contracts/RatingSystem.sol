@@ -20,6 +20,8 @@ contract RatingSystemFramework is Ownable {
     // Pensarci
     //
 
+    event UserCreated(User _userContract);
+
     /// @dev The constructor simply calls the Ownable constructor to store the owner which is the creator of this contract
     constructor () Ownable(msg.sender) public {
 
@@ -37,6 +39,8 @@ contract RatingSystemFramework is Ownable {
         User user = new User(_name, msg.sender);
         userAddresses[msg.sender] = user;
         users.insert(address(user));
+
+        emit UserCreated(user);
     }
 
     /// @notice Removes a User
