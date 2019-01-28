@@ -17,8 +17,8 @@ contract User is Ownable {
     OwnableCRUDStorage private items;
 
     // Structure to keep track of the ratings done by this user
-    uint public ratingCount = 0;    
-    mapping(uint => RatingLibrary.Rating) public ratingMap;
+    // uint public ratingCount = 0;    
+    // mapping(uint => RatingLibrary.Rating) public ratingMap;
 
     event ItemCreated(Item _itemContract);
 
@@ -70,25 +70,25 @@ contract User is Ownable {
     }
 
 
-    /// @notice Get all the ratings information connected to this Item
-    /// @return _scores: the array of scores
-    /// @return _timestamps: the array of timestamps
-    /// @return _rated: the array of addresses rated by this User
-    function getAllRatings() external view returns(uint[] memory _scores, 
-                                                    uint[] memory _timestamps,
-                                                    address[] memory _rated) {
+    // /// @notice Get all the ratings information connected to this Item
+    // /// @return _scores: the array of scores
+    // /// @return _timestamps: the array of timestamps
+    // /// @return _rated: the array of addresses rated by this User
+    // function getAllRatings() external view returns(uint[] memory _scores, 
+    //                                                 uint[] memory _timestamps,
+    //                                                 address[] memory _rated) {
 
-        _scores = new uint[](ratingCount);
-        _timestamps = new uint[](ratingCount);
-        _rated = new address[](ratingCount);
+    //     _scores = new uint[](ratingCount);
+    //     _timestamps = new uint[](ratingCount);
+    //     _rated = new address[](ratingCount);
 
-        for(uint i=0; i<ratingCount; i++) {
+    //     for(uint i=0; i<ratingCount; i++) {
 
-            _scores[i] = ratingMap[i].score;
-            _timestamps[i] = ratingMap[i].timestamp;
-            _rated[i] = ratingMap[i].rated;
-        }
-    }
+    //         _scores[i] = ratingMap[i].score;
+    //         _timestamps[i] = ratingMap[i].timestamp;
+    //         _rated[i] = ratingMap[i].rated;
+    //     }
+    // }
 
 
     /// @notice Get all the Item of this User

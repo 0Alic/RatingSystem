@@ -6,13 +6,13 @@
 |  File Name  |  SHA-1 Hash  |
 |-------------|--------------|
 | AssetStorage.sol | 4a3c4a1002a08882b80d2168ae76247cce82fb1a |
-| ComputerRegistry.sol | 8f1f06ff541537ba65a71877fc825399d94e3eb0 |
+| ComputerRegistry.sol | 91e46fa6b9ba378f7191b882317d1636effcc338 |
 | Interfaces.sol | 0bd6aea560fe9f7965387dc314fafad50875aecb |
-| Item.sol | 6eb11fd7896587f88f7bd408526995fbcfaf2ecb |
+| Item.sol | 1319488b6f9f18d3b91ca26336a9ff77c6d94b36 |
 | RatingComputer.sol | ba4dbd0519fc4f9c0640638d04d36d8656da3297 |
 | RatingLibrary.sol | a9f979023d665a56fa0453876ceba6879406561b |
-| RatingSystem.sol | 5af40a19077147ed803577530767d08ebab5614c |
-| User.sol | 32db2050c0cbe2f86103aa7970968fadddd7b1d6 |
+| RatingSystem.sol | 3aaee11b90d3f0103b2842b518113273f818bb97 |
+| User.sol | 8e64d969ce73ef89129d3b685b6d1374d45aa55a |
 
 
 ### Contracts Description Table
@@ -65,6 +65,8 @@
 | └ | changeComputer | External ❗️ | 🛑  | isOwner |
 | └ | computeRate | External ❗️ |   | |
 | └ | getAllRatings | External ❗️ |   | |
+| └ | ratingCount | External ❗️ |   | |
+||||||
 ||||||
 | **RatingComputer** | Interface |  |||
 | └ | compute | External ❗️ |   | |
@@ -91,7 +93,6 @@
 | └ | \<Constructor\> | Public ❗️ | 🛑  | Ownable |
 | └ | createItem | External ❗️ | 🛑  | isOwner |
 | └ | deleteItem | External ❗️ | 🛑  | isOwner |
-| └ | getAllRatings | External ❗️ |   | |
 | └ | getItems | External ❗️ |   | |
 | └ | isIn | External ❗️ |   | |
 | └ | itemCount | External ❗️ |   | |
