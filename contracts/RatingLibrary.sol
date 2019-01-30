@@ -8,7 +8,7 @@ library RatingLibrary {
         uint8 score;
         address rater;
         address rated;
-        uint timestamp;
+        uint inBlock;
         // Other data to define
     }
 }

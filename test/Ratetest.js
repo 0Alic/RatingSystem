@@ -19,7 +19,6 @@ contract("RatingSystemFramework: correctness test", accounts => {
     
     const eveName = "Eve";
 
-    const timestamp = 1;
     const score = 5;
 
 
@@ -265,7 +264,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             // It's possible to rate in two ways:
                 // Being owner of a User contract, and call the function rate() from your own User contract to keep track of your ratings
                 // Being an external owned account (OWA) and rate directly from Bob's Item contract
-            await bobItem.rate(score, timestamp, {from: carl});
+            await bobItem.rate(score, {from: carl});
     
             // Check that Carl cannot rate again
             assert.notEqual(await bobItem.checkForPermission(carl), 0, "Carl's permission status should be 1 or 2");
@@ -274,10 +273,9 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const ratingBundle = await bobItem.getAllRatings();
             assert.equal(await bobItem.ratingCount(), 1, bobItemName + " should have only 1 rating");
             assert.equal(ratingBundle._scores.length, 1, bobItemName + " should have only 1 score");
-            assert.equal(ratingBundle._timestamps.length, 1, bobItemName + " should have only 1 timestamp");
+            assert.equal(ratingBundle._blocks.length, 1, bobItemName + " should have only 1 timestamp");
             assert.equal(ratingBundle._raters.length, 1, bobItemName + " should have only 1 rater");
             assert.equal(ratingBundle._scores[0], score, "The score should be " + score);
-            assert.equal(ratingBundle._timestamps[0], timestamp, "The timestamp should be " + timestamp);
             assert.equal(ratingBundle._raters[0], carl, "The rater should be Carl: " + carl);
         });
         // Ok
@@ -292,7 +290,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
     
-            await bobItem.rate(score, timestamp, {from: carl}).then(assert.fail).catch(function(error) {
+            await bobItem.rate(score, {from: carl}).then(assert.fail).catch(function(error) {
                 // Should fail because Carl has no permission to rate
                 assert(error.message.indexOf('revert') >= 0, 'Carl ' + carl +  ' has no permission to rate ' + bobItemName);
             });
@@ -322,7 +320,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             assert.equal(carlPolicy._granted, false, "Carl should have its policy term equal to false");
     
             // Carl tries to rate anyway
-            await bobItem.rate(score, timestamp, {from: carl}).then(assert.fail).catch(function(error) {
+            await bobItem.rate(score, {from: carl}).then(assert.fail).catch(function(error) {
                 // Should fail because Carl has no permission to rate
                 assert(error.message.indexOf('revert') >= 0, 'Carl ' + carl +  ' has no permission to rate ' + bobItemName);
             });
@@ -399,23 +397,23 @@ contract("RatingSystemFramework: correctness test", accounts => {
             // Perform a loop of rating
             let ratings = [];
             let expectedScore = score;
-            ratings.push({score: 7, timestamp: 2, rater: alice});
-            ratings.push({score: 4, timestamp: 4, rater: dave});
-            ratings.push({score: 6, timestamp: 7, rater: carl});
+            ratings.push({score: 7, rater: alice});
+            ratings.push({score: 4, rater: dave});
+            ratings.push({score: 6, rater: carl});
     
-            ratings.push({score: 1, timestamp: 9, rater: carl});
-            ratings.push({score: 9, timestamp: 15, rater: dave});
-            ratings.push({score: 10, timestamp: 22, rater: carl});
+            ratings.push({score: 1, rater: carl});
+            ratings.push({score: 9, rater: dave});
+            ratings.push({score: 10, rater: carl});
     
-            ratings.push({score: 10, timestamp: 34, rater: carl});
-            ratings.push({score: 8, timestamp: 55, rater: dave});
-            ratings.push({score: 4, timestamp: 89, rater: dave});
+            ratings.push({score: 10, rater: carl});
+            ratings.push({score: 8, rater: dave});
+            ratings.push({score: 4, rater: dave});
     
             ratings.forEach(async (rating) => {
     
                 expectedScore += rating.score;
                 bobItem.grantPermission(rating.rater, {from: bob});
-                bobItem.rate(rating.score, rating.timestamp, {from: rating.rater});
+                bobItem.rate(rating.score, {from: rating.rater});
             });
     
             // Check the number of registered ratings is ok

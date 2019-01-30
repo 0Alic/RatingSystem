@@ -31,9 +31,8 @@ contract Item is Permissioned {
 
     /// @notice Rate this Item
     /// @param _score The score to assign to this item
-    /// @param _timestamp The timestamp of this rating (should be provided by higher level call)
     /// @dev Check whether caller has the permission on this contract (since it's an extension of Permissioned)
-    function rate(uint8 _score, uint _timestamp) external {
+    function rate(uint8 _score) external {
 
         require(checkForPermission(msg.sender) == 0, "No permission to rate this Item");
         require(_score >= 1 && _score <= 10, "Score out of scale");
@@ -42,7 +41,7 @@ contract Item is Permissioned {
 
         ratingMap.push(RatingLibrary.Rating({isValid: true,
                                             score: _score,
-                                            timestamp: _timestamp,
+                                            inBlock: block.number,
                                             rater: msg.sender,
                                             rated: address(this) }));
     }
@@ -76,22 +75,22 @@ contract Item is Permissioned {
 
     /// @notice Get all the ratings information of this Item
     /// @return _scores: the array of scores
-    /// @return _timestamps: the array of timestamps
+    /// @return _blocks: the array of blocks
     /// @return _raters: the array of addresses which rated this Item
     function getAllRatings() external view returns (uint[] memory _scores, 
-                                                    uint[] memory _timestamps, 
+                                                    uint[] memory _blocks, 
                                                     address[] memory _raters) {
 
         uint ratingCount = ratingMap.length;
 
         _scores = new uint[](ratingCount);
-        _timestamps = new uint[](ratingCount);
+        _blocks = new uint[](ratingCount);
         _raters = new address[](ratingCount);
 
         for(uint i=0; i<ratingCount; i++) {
 
             _scores[i] = ratingMap[i].score;
-            _timestamps[i] = ratingMap[i].timestamp;
+            _blocks[i] = ratingMap[i].inBlock;
             _raters[i] = ratingMap[i].rater;
         }   
     }

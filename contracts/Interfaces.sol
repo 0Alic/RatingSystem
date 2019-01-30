@@ -39,8 +39,11 @@ contract Permissioned is Ownable {
 
     // For each address we have a PermissionPolicy defined
     mapping(address => PermissionPolicy) public permissionMap;
-    uint constant interval = 4 weeks; 
+    uint constant interval = 100000; // 100K blocks, if 14 sec per block, then more or less 16 days
 
+    // Events
+    event NewPermission(address _to);
+    event PermissionRevoked(address _to);
 
     constructor (address _owner) Ownable(_owner) public {}
 
@@ -52,8 +55,9 @@ contract Permissioned is Ownable {
 
         require(_to != owner, "The owner cannot grant permission to himself");
 
-        // Magari trovare soluzione alternativa a "now"
-        permissionMap[_to] = PermissionPolicy({granted: true, periodStart: now});
+        permissionMap[_to] = PermissionPolicy({granted: true, periodStart: block.number});
+
+        emit NewPermission(_to);
     }
 
 
@@ -65,6 +69,8 @@ contract Permissioned is Ownable {
         require(msg.sender == _to || msg.sender == owner, "You cannot revoke permission to other users");
 
         permissionMap[_to] = PermissionPolicy({granted: false, periodStart: 0});
+
+        emit PermissionRevoked(_to);
     }
 
 
@@ -77,7 +83,7 @@ contract Permissioned is Ownable {
 
         if (policy.granted == false) 
             return 1; // No permission to rate
-        if (policy.periodStart + interval < now) 
+        if (policy.periodStart + interval < block.number) 
             return 2; // Out of date
 
         return 0;
