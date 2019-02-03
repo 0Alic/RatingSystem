@@ -12,15 +12,20 @@
  *   },
  */
 
-var web3 = require("web3");
-var HDWalletProvider = require("truffle-hdwallet-provider");
-var fs = require("fs");
+const web3 = require("web3");
+const HDWalletProvider = require("truffle-hdwallet-provider");
+const fs = require("fs");
 
 const credentials = JSON.parse(fs.readFileSync('ropsten.json', 'utf8'));
 
-var mnemonic = credentials["mnemonic"];
-var infura_key = credentials["infuraKey"];
-var cnr = credentials["cnr"];
+const mnemonic = credentials["mnemonic"];
+const infura_key = credentials["infuraKey"];
+const cnr = credentials["cnr"];
+
+// Ropsten account indexes
+const systemCreator = 0;
+const itemCreator = 1;
+const rater = 2;
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
@@ -36,7 +41,7 @@ module.exports = {
     //Info for deployment on Ropsten, exploiting an Infura node
     ropsten:  {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/"+infura_key, 2)
+        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/"+infura_key, rater)
       },
       network_id: 3,
       host: "127.0.0.1",

@@ -1,0 +1,14 @@
+{
+    "development": {
+        "trials": 5,
+        "bob": "0xc366CE3A46B1c509497D6D468BE8AA7c178f81b4",
+        "rater": "0xe541F30A411c9e61b9339D49126cFA1aDc6CcE2D",
+        "item": "0x0583E802d073913e974Ef665fB4f1aae4330E131"
+    },
+    "ropsten": {
+
+        "trials": 5,
+        "rater": "0xEa90E7320e682631686Ec7417bCD8c73e0D75487",
+        "item": "0x501f0Cde17E5F945D85268E2677Df883275aE422"
+    }
+}
