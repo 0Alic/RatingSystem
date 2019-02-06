@@ -9,3 +9,6 @@ ropsten.json
 
 .doxityrc
 /scripts/**
+
+/contracts/open-zeppelin
+/contracts/Token.sol
