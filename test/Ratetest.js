@@ -459,7 +459,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const expectedScore = total / weightSum;
             assert.equal(await bobItem.computeRate(weightComputer), Math.floor(expectedScore), bobItemName + " should have a weighted average score of " + expectedScore);
         });
-                
+        // Ok  
     });
     
 

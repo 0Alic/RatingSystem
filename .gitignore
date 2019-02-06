@@ -12,3 +12,5 @@ ropsten.json
 
 /contracts/open-zeppelin
 /contracts/Token.sol
+
+Libs/

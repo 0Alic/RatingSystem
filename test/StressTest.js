@@ -3,6 +3,7 @@ const Storage = artifacts.require("AssetStorage");
 const User = artifacts.require("User");
 const Item = artifacts.require("Item");
 const ComputerRegistry = artifacts.require("ComputerRegistry");
+const SimpleComputer = artifacts.require("./SimpleAvarageComputer");
 
 contract("RatingSystemFramework: Stresstest", accounts => {
 
@@ -80,4 +81,31 @@ contract("RatingSystemFramework: Stresstest", accounts => {
         });
     
     });
+
+    describe("Check gas limit for loop functions", function() {
+
+        const elements = 3250;
+
+        it("Test RatingComputer.compute limit in terms of gas", async() => {
+
+            const rsf = await RatingSystem.deployed();
+            const registryAddress = await rsf.computerRegistry();
+            const registry = await ComputerRegistry.at(registryAddress);
+            const pc = await registry.getComputer(0);
+            const computer = await SimpleComputer.at(pc);
+            const address = await registry.owner();
+        
+            let scores = []
+            let blocks = []
+            let addresses = []
+                
+            for(let i=0; i<elements; i++) {
+                scores.push(Math.floor(Math.random()*10 + 1));
+                blocks.push(10000);
+                addresses.push(address);
+            }
+
+            await computer.compute(scores, blocks, addresses);
+        });            
+    })
 });
