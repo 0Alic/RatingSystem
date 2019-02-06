@@ -425,6 +425,41 @@ contract("RatingSystemFramework: correctness test", accounts => {
             assert.equal(await bobItem.computeRate(bobComputer), expectedScore, bobItemName + " should have an average score of " + expectedScore);
         });
         // Ok
+
+        it("Should test the WeightedAverageComputer contract for " + bobItemName , async() => {
+
+            const ratingSystem = await RatingSystem.deployed();
+            const registryAddress = await ratingSystem.computerRegistry();
+            const registry = await ComputerRegistry.at(registryAddress);
+            const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+            const bobObject = await User.at(bobUserAddress);
+            const bobItemList = await bobObject.getItems();
+            const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
+            const bobItem = await Item.at(bobItemAddress);
+
+            const bobComputer = await bobItem.computer();
+            const weightComputer = await registry.getComputer(1); // 2nd computer is the weighted average 
+               
+            const ratings = await bobItem.getAllRatings();
+            const len = ratings._blocks.length;
+            const last = ratings._blocks[len-1];
+            let total = 0;
+            let weightSum = 0;
+
+            for(let i=0; i<len; i++) {
+
+                const s = ratings._scores[i];
+                const b = ratings._blocks[i];
+                const weight = (b/last)*100;
+
+                total += s*weight;
+                weightSum += weight;
+            }
+
+            const expectedScore = total / weightSum;
+            assert.equal(await bobItem.computeRate(weightComputer), Math.floor(expectedScore), bobItemName + " should have a weighted average score of " + expectedScore);
+        });
+                
     });
     
 

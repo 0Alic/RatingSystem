@@ -61,15 +61,12 @@ contract Item is Permissioned {
     /// @return The final score of this Item
     function computeRate(RatingComputer _computer) external view returns (uint) {
 
-        uint ratingCount = ratingMap.length;
+        uint[] memory _scores;
+        uint[] memory _blocks;
+        address[] memory _raters;
+        (_scores, _blocks, _raters) = getAllRatings();
 
-        // Facendo così faccio 2 for: uno per crearmi l'array ed uno per calcolarci il rate finale
-        // Dai test avere un secondo array con solo gli scores ed evitare questo loop l'ordine di grandezza non cambia
-        uint[] memory _scores = new uint[](ratingCount);
-        for(uint i=0; i<ratingCount; i++) {
-            _scores[i] = ratingMap[i].score;
-        }
-        return _computer.compute(_scores);
+        return _computer.compute(_scores, _blocks, _raters);
     }
 
 
@@ -77,7 +74,7 @@ contract Item is Permissioned {
     /// @return _scores: the array of scores
     /// @return _blocks: the array of blocks
     /// @return _raters: the array of addresses which rated this Item
-    function getAllRatings() external view returns (uint[] memory _scores, 
+    function getAllRatings() public view returns (uint[] memory _scores, 
                                                     uint[] memory _blocks, 
                                                     address[] memory _raters) {
 

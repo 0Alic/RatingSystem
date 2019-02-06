@@ -3,6 +3,7 @@ const Framework = artifacts.require("./RatingSystemFramework");
 const Storage = artifacts.require("./OwnableCRUDStorage");
 const ComputerRegistry = artifacts.require("./ComputerRegistry");
 const SimpleComputer = artifacts.require("./SimpleAvarageComputer");
+const WeightComputer = artifacts.require("./WeightedAverageComputer");
 
 module.exports = function(deployer, network, accounts) {
 
@@ -17,6 +18,10 @@ module.exports = function(deployer, network, accounts) {
             const carl = accounts[0];  // Rater user
     
             const system = await deployer.deploy(Framework, {from: alice});
+            const pc = await deployer.deploy(WeightComputer, {from: alice});
+            const registryAddress = await system.computerRegistry();
+            const registry = await ComputerRegistry.at(registryAddress);            
+            await registry.pushComputer(pc.address, web3.utils.fromUtf8("Weighted Average"), {from: alice});
         }
         else if(network=="ropsten") {
 
