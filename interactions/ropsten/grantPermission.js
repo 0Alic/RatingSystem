@@ -67,5 +67,5 @@ module.exports = async () => {
             clearInterval(grantLoop);
         }
 
-    }, 20000); // every 50 secs
+    }, 30000); // every 50 secs
 }

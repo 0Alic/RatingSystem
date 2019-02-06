@@ -60,5 +60,5 @@ module.exports = async () => {
             clearInterval(rateLoop);
         }
 
-    }, 30000); // every 50 secs
+    }, 20000); // every 50 secs
 }

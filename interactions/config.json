@@ -7,8 +7,9 @@
     },
     "ropsten": {
 
-        "trials": 5,
+        "trials": 120,
         "rater": "0xEa90E7320e682631686Ec7417bCD8c73e0D75487",
-        "item": "0x501f0Cde17E5F945D85268E2677Df883275aE422"
+        "item": "0x501f0Cde17E5F945D85268E2677Df883275aE422",
+        "computeRateTrials": 25
     }
 }
