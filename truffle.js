@@ -41,7 +41,7 @@ module.exports = {
     //Info for deployment on Ropsten, exploiting an Infura node
     ropsten:  {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/"+infura_key, rater)
+        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/"+infura_key, systemCreator)
       },
       network_id: 3,
       host: "127.0.0.1",
