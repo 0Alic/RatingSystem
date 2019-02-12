@@ -91,8 +91,7 @@ interface RatingComputer {
     /// @param _scores The array of scores (1 to 10)
     /// @param _blocks The array of blocks containing the scores
     function compute(uint[] calldata _scores, 
-                     uint[] calldata _blocks, 
-                     address[] calldata _raters) external pure returns(uint);
+                     uint[] calldata _blocks) external pure returns(uint);
 }
 
 
@@ -101,7 +100,7 @@ interface RatingComputer {
 contract SimpleAvarageComputer is RatingComputer {
     
     function compute(uint[] calldata _scores, 
-                     uint[] calldata _blocks) haveEqualLength(_scores, _blocks, _raters) external pure returns(uint) {
+                     uint[] calldata _blocks) haveEqualLength(_scores, _blocks) external pure returns(uint) {
 
         uint len = _scores.length;
 
@@ -124,7 +123,7 @@ contract SimpleAvarageComputer is RatingComputer {
 contract WeightedAverageComputer is RatingComputer {
 
     function compute(uint[] calldata _scores, 
-                     uint[] calldata _blocks) haveEqualLength(_scores, _blocks, _raters) external pure returns(uint) {
+                     uint[] calldata _blocks) haveEqualLength(_scores, _blocks) external pure returns(uint) {
 
         uint len = _scores.length;
 

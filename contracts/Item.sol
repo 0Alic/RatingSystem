@@ -6,7 +6,6 @@ import "./AssetStorage.sol";
 import "./RatingLibrary.sol";
 
 
-
 /// @title Item
 /// @notice This contract represents an item of the RatingSystemFramework. Items can be rated by external accounts or contract only if they have the permissions to do that
 /// @dev The Item contract inherits from Permissioned. It defines the structure of a Rating and it keeps a RatingComputer instance to let the users know how its final score will be computed
@@ -16,7 +15,11 @@ contract Item is Permissioned {
     bytes32 public name;
 
     // Structure to keep track of the ratings performed on this Item
-    RatingLibrary.Rating[] public ratingMap;
+//    RatingLibrary.Rating[] public ratingMap;
+
+    uint[] public scoreArray;
+    uint[] public blockArray;
+    address[] public raterArray;
 
     // Contract in charge to compute the final score of this Item
     RatingComputer public computer;
@@ -39,11 +42,17 @@ contract Item is Permissioned {
 
         revokePermission(msg.sender);
 
-        ratingMap.push(RatingLibrary.Rating({isValid: true,
-                                            score: _score,
-                                            inBlock: block.number,
-                                            rater: msg.sender,
-                                            rated: address(this) }));
+        scoreArray.push(_score);
+        blockArray.push(block.number);
+        raterArray.push(msg.sender);
+
+        assert(scoreArray.length == blockArray.length);        
+        assert(blockArray.length == raterArray.length);
+        // ratingMap.push(RatingLibrary.Rating({isValid: true,
+        //                                     score: _score,
+        //                                     inBlock: block.number,
+        //                                     rater: msg.sender,
+        //                                     rated: address(this) }));
     }
     
 
@@ -61,12 +70,12 @@ contract Item is Permissioned {
     /// @return The final score of this Item
     function computeRate(RatingComputer _computer) external view returns (uint) {
 
-        uint[] memory _scores;
-        uint[] memory _blocks;
-        address[] memory _raters;
-        (_scores, _blocks, _raters) = getAllRatings();
+        // uint[] memory _scores;
+        // uint[] memory _blocks;
+        // address[] memory _raters;
+        // (_scores, _blocks, _raters) = getAllRatings();
 
-        return _computer.compute(_scores, _blocks, _raters);
+        return _computer.compute(scoreArray, blockArray);
     }
 
 
@@ -78,25 +87,28 @@ contract Item is Permissioned {
                                                     uint[] memory _blocks, 
                                                     address[] memory _raters) {
 
-        uint ratingCount = ratingMap.length;
+        // uint ratingCount = ratingMap.length;
 
-        _scores = new uint[](ratingCount);
-        _blocks = new uint[](ratingCount);
-        _raters = new address[](ratingCount);
+        // _scores = new uint[](ratingCount);
+        // _blocks = new uint[](ratingCount);
+        // _raters = new address[](ratingCount);
 
-        for(uint i=0; i<ratingCount; i++) {
+        // for(uint i=0; i<ratingCount; i++) {
 
-            _scores[i] = ratingMap[i].score;
-            _blocks[i] = ratingMap[i].inBlock;
-            _raters[i] = ratingMap[i].rater;
-        }   
+        //     _scores[i] = ratingMap[i].score;
+        //     _blocks[i] = ratingMap[i].inBlock;
+        //     _raters[i] = ratingMap[i].rater;
+        // }   
+
+        _scores = scoreArray;
+        _blocks = blockArray;
+        _raters = raterArray;
     }
 
     /// @notice Get the number of ratings performed on this Item
     /// @return The number of ratings
     function ratingCount() external view returns(uint) {
 
-        return ratingMap.length;
+        return scoreArray.length;
     }
-
 }
