@@ -10,6 +10,13 @@
         "trials": 120,
         "rater": "0xEa90E7320e682631686Ec7417bCD8c73e0D75487",
         "item": "0xB337cD7204549bb4a99e35C9d09b600D9E5c1b3C",
-        "computeRateTrials": 25
+        "ratingComputer": {
+            "1": "simpleAvg",
+            "2": "weightedAvg"
+        },
+        "ratingList": [1, 10, 50, 100, 250, 500, 1000, 2000],
+        "samples": 25,
+        "degrees": [1, 20]
     }
 }
+
