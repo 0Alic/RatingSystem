@@ -2,4 +2,4 @@
 ## Smart Contract for support to rating platforms
 
 ## Simple overview
-![a](./jpg/OverviewSimple.jpg)
+![a](./jpg/OverviewSimple.png)
