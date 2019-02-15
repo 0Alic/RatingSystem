@@ -1,8 +1,6 @@
 const Framework = artifacts.require("./RatingSystemFramework");
-const Storage = artifacts.require("./OwnableCRUDStorage");
 const ComputerRegistry = artifacts.require("./ComputerRegistry");
 const SimpleComputer = artifacts.require("./SimpleAvarageComputer");
-const Item = artifacts.require("./Item");
 
 const fs = require("fs");
 
@@ -21,16 +19,6 @@ const computerObject = config["ropsten"]["ratingComputer"];     // Id of the int
  * 
  * 
  * */
-function simpleAverage(list) {
-
-    let tot = 0;
-
-    list.forEach(element => {
-        tot += element;
-    });
-
-    return Math.floor(tot/list.length);
-}
 
 // NB Weighted average non cambia il risultato perché il valore block inserito è costante
 //  viene valuata solo la latenza di calcolo
@@ -77,12 +65,10 @@ module.exports = async () => {
                     // Create input arrays
                     let scores = []
                     let blocks = []
-                    let addresses = []
                 
                     for(let i=0; i<elements[j]; i++) {
                         scores.push(Math.floor(Math.random()*10 + 1));
                         blocks.push(10000);
-                        addresses.push(address);
                     }
 
                     let init;
@@ -100,7 +86,7 @@ module.exports = async () => {
 
                         // Create "degree" calls to compute()
                         for(var k=0; k<degree; k++) {
-                            promises.push(computer.compute(scores, blocks, addresses));
+                            promises.push(computer.compute(scores, blocks));
                         }
                         
                         // Wait for all these calls

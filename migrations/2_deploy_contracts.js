@@ -26,7 +26,15 @@ module.exports = function(deployer, network, accounts) {
         else if(network=="ropsten") {
 
             // Deploy on ropsten
-            await deployer.deploy(Framework);
+            const system = await deployer.deploy(Framework);
+            const avgPc = await deployer.deploy(SimpleComputer);
+            const wgtPc = await deployer.deploy(WeightComputer);
+
+            const registryAddress = await system.computerRegistry();
+            const registry = await ComputerRegistry.at(registryAddress);
+
+            await registry.pushComputer(avgPc.address, web3.utils.fromUtf8("Simple Average"));
+            await registry.pushComputer(wgtPc.address, web3.utils.fromUtf8("Weighted Average"));
         }
         else {
             // Define other networks

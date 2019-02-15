@@ -10,13 +10,7 @@ contract ComputerRegistry is Ownable {
     RatingComputer[] private registry;
     bytes32[] private ids;
 
-    constructor(address _owner) Ownable(_owner) public {
-
-        // Init the registry with a simple average computer
-        RatingComputer _initPC = new SimpleAvarageComputer();
-        registry.push(_initPC);
-        ids.push(0x53696d706c654176657261676500000000000000000000000000000000000000); // "Simple Average"
-    }
+    constructor(address _owner) Ownable(_owner) public {}
 
     /// @notice Add a new RatingComputer to the registry, only if the caller is the owner of this registry (avoid spam)
     /// @param _computer The computer to add

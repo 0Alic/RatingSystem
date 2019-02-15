@@ -3,7 +3,6 @@ pragma solidity ^0.5.0;
 import "./Interfaces.sol";
 import "./RatingComputer.sol";
 import "./AssetStorage.sol";
-import "./RatingLibrary.sol";
 
 
 /// @title Item
@@ -14,9 +13,7 @@ contract Item is Permissioned {
     // Item name
     bytes32 public name;
 
-    // Structure to keep track of the ratings performed on this Item
-//    RatingLibrary.Rating[] public ratingMap;
-
+    // Structures to keep track of the ratings performed on this Item
     uint[] public scoreArray;
     uint[] public blockArray;
     address[] public raterArray;
@@ -48,11 +45,6 @@ contract Item is Permissioned {
 
         assert(scoreArray.length == blockArray.length);        
         assert(blockArray.length == raterArray.length);
-        // ratingMap.push(RatingLibrary.Rating({isValid: true,
-        //                                     score: _score,
-        //                                     inBlock: block.number,
-        //                                     rater: msg.sender,
-        //                                     rated: address(this) }));
     }
     
 
@@ -70,11 +62,6 @@ contract Item is Permissioned {
     /// @return The final score of this Item
     function computeRate(RatingComputer _computer) external view returns (uint) {
 
-        // uint[] memory _scores;
-        // uint[] memory _blocks;
-        // address[] memory _raters;
-        // (_scores, _blocks, _raters) = getAllRatings();
-
         return _computer.compute(scoreArray, blockArray);
     }
 
@@ -86,19 +73,6 @@ contract Item is Permissioned {
     function getAllRatings() public view returns (uint[] memory _scores, 
                                                     uint[] memory _blocks, 
                                                     address[] memory _raters) {
-
-        // uint ratingCount = ratingMap.length;
-
-        // _scores = new uint[](ratingCount);
-        // _blocks = new uint[](ratingCount);
-        // _raters = new address[](ratingCount);
-
-        // for(uint i=0; i<ratingCount; i++) {
-
-        //     _scores[i] = ratingMap[i].score;
-        //     _blocks[i] = ratingMap[i].inBlock;
-        //     _raters[i] = ratingMap[i].rater;
-        // }   
 
         _scores = scoreArray;
         _blocks = blockArray;
