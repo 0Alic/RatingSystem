@@ -11,7 +11,7 @@ import "./ComputerRegistry.sol";
 contract RatingSystemFramework is Ownable {
 
     ComputerRegistry public computerRegistry;       // This is the registry for the computer contracts
-    OwnableCRUDStorage private users;               // This manage that removal of User won't leave gaps in the array
+    OwnableStoragePointer private users;               // This manage that removal of User won't leave gaps in the array
     mapping(address => User) private userAddresses; // This to ensure that a single account can instantiate only a single User contract
     //
     // CHECK
@@ -26,7 +26,7 @@ contract RatingSystemFramework is Ownable {
     constructor () Ownable(msg.sender) public {
 
         computerRegistry = new ComputerRegistry(msg.sender);    // The owner of RatingSystemFramework is the owner of the Registry
-        users = new OwnableCRUDStorage(address(this));          // Because (this) should interact with the storage
+        users = new OwnableStoragePointer(address(this));          // Because (this) should interact with the storage
     }
 
     /// @notice creates a User with an username

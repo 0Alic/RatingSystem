@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "truffle-analyze": "^5.0.0",
-    "truffle-hdwallet-provider": "^1.0.2"
+    "truffle-hdwallet-provider": "^1.0.2",
+    "web3": "^1.0.0-beta.46"
   },
   "devDependencies": {},
   "scripts": {

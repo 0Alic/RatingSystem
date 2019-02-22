@@ -14,7 +14,7 @@ contract User is Ownable {
     bytes32 public name;
 
     // Structure to store Items published by this user    
-    OwnableCRUDStorage private items;
+    OwnableStoragePointer private items;
 
     // Structure to keep track of the ratings done by this user
     // uint public ratingCount = 0;    
@@ -28,11 +28,15 @@ contract User is Ownable {
     /// @dev The constructor calls the Ownable constructor to store the owner which should be passed by the RatingSystemFramework
     constructor (bytes32 _name, address _owner) Ownable(_owner)  public {
 
-        items = new OwnableCRUDStorage(address(this));
+        items = new OwnableStoragePointer(address(this));
         name = _name;
     }
 
 
+    function destroy() external isOwner {
+        // We don't assume User contracts to store ether
+        selfdestruct(address(uint160(0x0))); // cast 0x0 to address payable
+    }
     
     // /// @notice Function to call to rate an Item and keep track of the rating
     // /// @param _item The Item to rate
