@@ -107,9 +107,9 @@ contract StoragePointer is AssetStorage {
 
 
 
-/// @title OwnableCRUDStorage
+/// @title OwnableStoragePointer
 /// @notice Extension of StoragePointer such that insert/remove operations are allowed only by the owner of the storage
-contract OwnableCRUDStorage is StoragePointer, Ownable {
+contract OwnableStoragePointer is StoragePointer, Ownable {
 
     constructor(address _owner) public Ownable(_owner) {}
 

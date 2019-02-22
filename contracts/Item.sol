@@ -29,6 +29,11 @@ contract Item is Permissioned {
     }
 
 
+    function destroy() external isOwner {
+        // We don't assume User contracts to store ether
+        selfdestruct(address(uint160(0x0))); // cast 0x0 to address payable
+    }
+
     /// @notice Rate this Item
     /// @param _score The score to assign to this item
     /// @dev Check whether caller has the permission on this contract (since it's an extension of Permissioned)
@@ -60,7 +65,7 @@ contract Item is Permissioned {
     /// @notice Compute the final score
     /// @param _computer The RatingComputer to use to compute the final score
     /// @return The final score of this Item
-    function computeRate(RatingComputer _computer) external view returns (uint) {
+    function computeScore(RatingComputer _computer) external view returns (uint) {
 
         return _computer.compute(scoreArray, blockArray);
     }

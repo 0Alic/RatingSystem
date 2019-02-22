@@ -9,16 +9,13 @@ const ComputerRegistry = artifacts.require("ComputerRegistry");
 contract("RatingSystemFramework: correctness test", accounts => {
 
     const alice = accounts[1]; // System creator
-    const bob = accounts[3];   // User of the System
-    const carl = accounts[0];  // Rater OWA user
-    const dave = accounts[2];  // Error Test user
-    const eve = accounts[4];   // Rater User user
+    const bob = accounts[8];   // User of the System
+    const carl = accounts[7];  // Rater EOA user
+    const dave = accounts[6];  // Error Test user
 
     const bobName = "Bob";
     const bobItemName = "Bobs content";
     
-    const eveName = "Eve";
-
     const score = 5;
 
 
@@ -239,13 +236,13 @@ contract("RatingSystemFramework: correctness test", accounts => {
 
 
     /////////////////
-    // Tests concerning rates from OWA
+    // Tests concerning rates from EOA
     /////////////////
 
 
     describe("Test the correctness of the access policy and of rating operation", function() {
 
-        it("Should let Carl (OWA) to rate " + bobItemName + " " + score + " stars", async() => {
+        it("Should let Carl (EOA) to rate " + bobItemName + " " + score + " stars", async() => {
 
             const ratingSystem = await RatingSystem.deployed();
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
@@ -422,7 +419,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             // Compute the final score
             expectedScore = Math.floor(expectedScore/(ratings.length+1)); // Solidity truncates uint
             // Check final score
-            assert.equal(await bobItem.computeRate(bobComputer), expectedScore, bobItemName + " should have an average score of " + expectedScore);
+            assert.equal(await bobItem.computeScore(bobComputer), expectedScore, bobItemName + " should have an average score of " + expectedScore);
         });
         // Ok
 
@@ -437,7 +434,6 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
 
-            const bobComputer = await bobItem.computer();
             const weightComputer = await registry.getComputer(1); // 2nd computer is the weighted average 
                
             const ratings = await bobItem.getAllRatings();
@@ -457,7 +453,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             }
 
             const expectedScore = total / weightSum;
-            assert.equal(await bobItem.computeRate(weightComputer), Math.floor(expectedScore), bobItemName + " should have a weighted average score of " + expectedScore);
+            assert.equal(await bobItem.computeScore(weightComputer), Math.floor(expectedScore), bobItemName + " should have a weighted average score of " + expectedScore);
         });
         // Ok  
     });

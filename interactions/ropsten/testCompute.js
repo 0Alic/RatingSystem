@@ -34,7 +34,7 @@ module.exports = async () => {
         const address = await web3.currentProvider.getAddress();
 
         let results = {};
-        let output = "'test.json'";
+        let output = "test.json";
 
         // Iterate over provided computers
         for(pcId in computerObject) {

@@ -38,6 +38,13 @@ module.exports = {
       network_id: "*"
     },
 
+    // Network for <truffle test>
+    testing: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*"
+    },
+
     //Info for deployment on Ropsten, exploiting an Infura node
     ropsten:  {
       provider: function() {
