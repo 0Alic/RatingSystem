@@ -54,9 +54,11 @@ contract("RatingSystemFramework: correctness test", accounts => {
             // Check ownership and name
             const owner = await bobObject.owner();
             const name = await bobObject.name();
+            const rsf = await bobObject.RSF();
             assert.equal(bob, owner, "The owner is not " + bobName);
             assert.equal(web3.utils.toUtf8(name), bobName, "The User's name should be " + bobName);
-    
+            assert.equal(rsf, ratingSystem.address, "The User's RSF should be " + ratingSystem.address)
+
             // Check User's data inside RatingSystemFramework
             let userList = [];
             userList.push(bobUserAddress);
@@ -161,8 +163,10 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const itemObject = await Item.at(deployedItemAddress);
     
             // Check correctness of Item creation flow
+            const rsf = await itemObject.RSF();
             const itemName = web3.utils.toUtf8(await itemObject.name());
             const expectedItemList = [deployedItemAddress];
+            assert.equal(rsf, ratingSystem.address, "The item's RSF should be " + ratingSystem.address);
             assert.equal(itemName, bobItemName, "The item is not " + bobItemName);
             assert.equal(await itemObject.owner(), bob, "The owner of " + bobItemName + " should be " + bob);
             assert.equal(await bobObject.itemCount(), 1, "User " + bobUserAddress + " should have only 1 deployed Item");
@@ -236,35 +240,47 @@ contract("RatingSystemFramework: correctness test", accounts => {
 
 
     /////////////////
-    // Tests concerning rates from EOA
+    // Tests concerning rates from User
     /////////////////
 
 
     describe("Test the correctness of the access policy and of rating operation", function() {
 
-        it("Should let Carl (EOA) to rate " + bobItemName + " " + score + " stars", async() => {
+
+        it("Should create User contract for carl", async() => {
 
             const ratingSystem = await RatingSystem.deployed();
+            const tx = await ratingSystem.createUser(web3.utils.fromUtf8("Carl"), {from: carl});
+        });
+        // Ok
+
+
+        it("Should let Carl (User contract) to rate " + bobItemName + " " + score + " stars", async() => {
+
+            const ratingSystem = await RatingSystem.deployed();
+            // Get Carl User
+            const carlUserAddress = await ratingSystem.getMyUserContract({from: carl});
+            const carlObject = await User.at(carlUserAddress);
+            // Get Bob User
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
             const bobObject = await User.at(bobUserAddress);
+            // Get Bob Item
             const bobItemList = await bobObject.getItems();
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
     
             // Supposing Bob and Carl agreed in some way that Carl can rate Bob's Item
-            await bobItem.grantPermission(carl, {from: bob});
+            await bobItem.grantPermission(carlUserAddress, {from: bob});
     
-            // Check policy's flag of Carl
-            const carlPolicy = await bobItem.getMyPolicy({from: carl});
-            assert.equal(carlPolicy._granted, true, "Carl should have its policy term equal to true");
+            // Check policy's flag of Carl's User contract
+            const carlPolicy = await bobItem.getPolicy(carlUserAddress);
+            assert.equal(carlPolicy._granted, true, "Carl (User) should have its policy term equal to true");
     
-            // It's possible to rate in two ways:
-                // Being owner of a User contract, and call the function rate() from your own User contract to keep track of your ratings
-                // Being an external owned account (OWA) and rate directly from Bob's Item contract
-            await bobItem.rate(score, {from: carl});
+            // Carl (User) rates Bob's item
+            await carlObject.rate(bobItemAddress, score, {from: carl});
     
             // Check that Carl cannot rate again
-            assert.notEqual(await bobItem.checkForPermission(carl), 0, "Carl's permission status should be 1 or 2");
+            assert.notEqual(await bobItem.checkForPermission(carlUserAddress), 0, "Carl's permission status should be 1 or 2");
             
             // Check item's ratings
             const ratingBundle = await bobItem.getAllRatings();
@@ -273,7 +289,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             assert.equal(ratingBundle._blocks.length, 1, bobItemName + " should have only 1 timestamp");
             assert.equal(ratingBundle._raters.length, 1, bobItemName + " should have only 1 rater");
             assert.equal(ratingBundle._scores[0], score, "The score should be " + score);
-            assert.equal(ratingBundle._raters[0], carl, "The rater should be Carl: " + carl);
+            assert.equal(ratingBundle._raters[0], carlUserAddress, "The rater should be Carl: " + carlUserAddress);
         });
         // Ok
     
@@ -281,13 +297,19 @@ contract("RatingSystemFramework: correctness test", accounts => {
         it("Should not let Carl to rate again", async() => {
     
             const ratingSystem = await RatingSystem.deployed();
+            // Get Carl User
+            const carlUserAddress = await ratingSystem.getMyUserContract({from: carl});
+            const carlObject = await User.at(carlUserAddress);
+            // Get Bob User
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
             const bobObject = await User.at(bobUserAddress);
+            // Get Bob Item
             const bobItemList = await bobObject.getItems();
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
+
     
-            await bobItem.rate(score, {from: carl}).then(assert.fail).catch(function(error) {
+            await carlObject.rate(bobItemAddress, score, {from: carl}).then(assert.fail).catch(function(error) {
                 // Should fail because Carl has no permission to rate
                 assert(error.message.indexOf('revert') >= 0, 'Carl ' + carl +  ' has no permission to rate ' + bobItemName);
             });
@@ -301,23 +323,28 @@ contract("RatingSystemFramework: correctness test", accounts => {
         it("Should check the revokePermission() from Bob to Carl", async() => {
     
             const ratingSystem = await RatingSystem.deployed();
+            // Get Carl User
+            const carlUserAddress = await ratingSystem.getMyUserContract({from: carl});
+            const carlObject = await User.at(carlUserAddress);
+            // Get Bob User
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
             const bobObject = await User.at(bobUserAddress);
+            // Get Bob Item
             const bobItemList = await bobObject.getItems();
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
     
             // Suppose Bob and Carl agreed in some way that Carl can rate Bob's Item
-            await bobItem.grantPermission(carl, {from: bob});
+            await bobItem.grantPermission(carlUserAddress, {from: bob});
             // Suppose Bob decided to revoke Carl's permission for some reason
-            await bobItem.revokePermission(carl, {from: bob});
+            await bobItem.revokePermission(carlUserAddress, {from: bob});
     
             // Check policy's flag of Carl
-            const carlPolicy = await bobItem.getMyPolicy({from: carl});
+            const carlPolicy = await bobItem.getPolicy(carlUserAddress);
             assert.equal(carlPolicy._granted, false, "Carl should have its policy term equal to false");
     
             // Carl tries to rate anyway
-            await bobItem.rate(score, {from: carl}).then(assert.fail).catch(function(error) {
+            await carlObject.rate(bobItemAddress, score, {from: carl}).then(assert.fail).catch(function(error) {
                 // Should fail because Carl has no permission to rate
                 assert(error.message.indexOf('revert') >= 0, 'Carl ' + carl +  ' has no permission to rate ' + bobItemName);
             });
@@ -331,21 +358,26 @@ contract("RatingSystemFramework: correctness test", accounts => {
         it("Should avoid bugs in grantPermission() and revokePermission()", async() => {
     
             const ratingSystem = await RatingSystem.deployed();
+            // Get Carl User
+            const carlUserAddress = await ratingSystem.getMyUserContract({from: carl});
+            const carlObject = await User.at(carlUserAddress);
+            // Get Bob User
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
             const bobObject = await User.at(bobUserAddress);
+            // Get Bob Item
             const bobItemList = await bobObject.getItems();
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
     
             // Suppose Bob and Carl agreed in some way that Carl can rate Bob's Item
-            await bobItem.grantPermission(carl, {from: bob});
+            await bobItem.grantPermission(carlUserAddress, {from: bob});
     
             // Check policy's flag of Carl
-            let carlPolicy = await bobItem.getMyPolicy({from: carl});
+            let carlPolicy = await bobItem.getPolicy(carlUserAddress);
             assert.equal(carlPolicy._granted, true, "Carl should have its policy term equal to true");
     
             // Dave tries to revoke Carl's permissions
-            await bobItem.revokePermission(carl, {from: dave}).then(assert.fail).catch(function(error) {
+            await bobItem.revokePermission(carlUserAddress, {from: dave}).then(assert.fail).catch(function(error) {
                 // Should fail because Carl has no permission to rate
                 assert(error.message.indexOf('revert') >= 0, 'Dave ' + dave +  ' cannot revoke permissions to other');
             });
@@ -363,14 +395,51 @@ contract("RatingSystemFramework: correctness test", accounts => {
             });
     
             // Check policy's flag of alice/dave/carl
-            const alicePolicy = await bobItem.getMyPolicy({from: alice});
-            const davePolicy = await bobItem.getMyPolicy({from: dave});
-            carlPolicy = await bobItem.getMyPolicy({from: carl});
+            const alicePolicy = await bobItem.getPolicy(alice);
+            const davePolicy = await bobItem.getPolicy(dave);
+            carlPolicy = await bobItem.getPolicy(carlUserAddress);
             assert.equal(alicePolicy._granted, false, "Alice should have its policy term equal to false");
             assert.equal(davePolicy._granted, false, "Dave should have its policy term equal to false");
             assert.equal(carlPolicy._granted, true, "Carl should have its policy term equal to true");
         });
         // Ok
+
+
+        it("Should check grantPermission() and rate() to be called only by registered User contracts", async() => {
+
+            const ratingSystem = await RatingSystem.deployed();
+            // Get Carl User
+            const carlUserAddress = await ratingSystem.getMyUserContract({from: carl});
+            const carlObject = await User.at(carlUserAddress);
+            // Get Bob User
+            const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
+            const bobObject = await User.at(bobUserAddress);
+            // Get Bob Item
+            const bobItemList = await bobObject.getItems();
+            const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
+            const bobItem = await Item.at(bobItemAddress);
+
+            // Should fail because carl is not User contract
+            await bobItem.grantPermission(carl, {from: bob}).then(assert.fail).catch(function(error) {
+                assert(error.message.indexOf('revert') >= 0, "address " + carl + " of Carl is not a User contract");
+            });
+
+            // Deploy User contract without attaching to RSF
+            const daveUserContract = await User.new(web3.utils.fromUtf8("Malicious"), dave);
+            const daveUserAddress = await daveUserContract.address;
+
+            await daveUserContract.iAmRegisteredUser().then(assert.fail).catch(function(error) {
+                // Should fail because daveUserContract's rsf field is the address of dave which is not RSF
+                assert(error.message.indexOf('revert') >= 0, "address " + daveUserAddress + " of User of Dave is not a User contract of Alice's RSF");
+            });
+            
+            // Should fail because carl is not User contract
+            await bobItem.grantPermission(daveUserAddress, {from: bob}).then(assert.fail).catch(function(error) {
+                assert(error.message.indexOf('revert') >= 0, "address " + daveUserAddress + " of User of Dave is not a User contract of Alice's RSF");
+            });
+        });
+        // Ok
+
     });
 
     
@@ -384,33 +453,38 @@ contract("RatingSystemFramework: correctness test", accounts => {
         it("Should test the SimpleAverageComputer contract for " + bobItemName , async() => {
 
             const ratingSystem = await RatingSystem.deployed();
+            // Get Carl User
+            const carlUserAddress = await ratingSystem.getMyUserContract({from: carl});
+            const carlObject = await User.at(carlUserAddress);
+            // Get Bob User
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
             const bobObject = await User.at(bobUserAddress);
+            // Get Bob Item
             const bobItemList = await bobObject.getItems();
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
             const bobComputer = await bobItem.computer();
-    
+            
             // Perform a loop of rating
             let ratings = [];
             let expectedScore = score;
-            ratings.push({score: 7, rater: alice});
-            ratings.push({score: 4, rater: dave});
+            ratings.push({score: 7, rater: carl});
+            ratings.push({score: 4, rater: carl});
             ratings.push({score: 6, rater: carl});
     
             ratings.push({score: 1, rater: carl});
-            ratings.push({score: 9, rater: dave});
+            ratings.push({score: 9, rater: carl});
             ratings.push({score: 10, rater: carl});
     
             ratings.push({score: 10, rater: carl});
-            ratings.push({score: 8, rater: dave});
-            ratings.push({score: 4, rater: dave});
+            ratings.push({score: 8, rater: carl});
+            ratings.push({score: 4, rater: carl});
     
             ratings.forEach(async (rating) => {
     
                 expectedScore += rating.score;
-                bobItem.grantPermission(rating.rater, {from: bob});
-                bobItem.rate(rating.score, {from: rating.rater});
+                bobItem.grantPermission(carlUserAddress, {from: bob});
+                carlObject.rate(bobItemAddress, rating.score, {from: rating.rater});
             });
     
             // Check the number of registered ratings is ok
@@ -457,87 +531,5 @@ contract("RatingSystemFramework: correctness test", accounts => {
         });
         // Ok  
     });
-    
-
-    /////////////////
-    // Tests concerning rates from User contract
-    /////////////////
-
-    // describe("Testing the rating operation performed by User contract", function() {
-      
-    //     it("Should create a new User: " + eveName, async() => {
-
-    //         const ratingSystem = await RatingSystem.deployed();
-    //         const tx = await ratingSystem.createUser(web3.utils.fromUtf8(eveName), {from: eve});
-    //         const eveUserAddress = await ratingSystem.getMyUserContract({from: eve});
-    //         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
-    //         const eveObject = await User.at(eveUserAddress);
-    
-    //         // Check ownership and name
-    //         const owner = await eveObject.owner();
-    //         const name = await eveObject.name();
-    //         assert.equal(eve, owner, "The owner is not " + eveName);
-    //         assert.equal(web3.utils.toUtf8(name), eveName, "The User's name should be " + eveName);
-    
-    //         // Check User's data inside RatingSystemFramework
-    //         let userList = [];
-    //         userList.push(bobUserAddress);
-    //         userList.push(eveUserAddress);
-    //         assert.equal(await ratingSystem.userCount(), 2, "The RatingSystemFramework should have 2 User stored");
-    //         assert.deepEqual(await ratingSystem.getUsers(), userList, "The RatingSystemFramework should have this list of Users: " + userList);
-    //         assert.equal(await ratingSystem.isIn(eveUserAddress), true, eveUserAddress + " should belong to RatingSystemFramework");
-    //     });
-    //     // Ok
-    
-    
-    //     it("Should let Eve User contract rate " + bobItemName, async() => {
-    
-    //         const ratingSystem = await RatingSystem.deployed();
-    //         const eveUserAddress = await ratingSystem.getMyUserContract({from: eve});
-    //         const eveObject = await User.at(eveUserAddress);
-    //         const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
-    //         const bobObject = await User.at(bobUserAddress);
-    
-    //         const bobItemList = await bobObject.getItems();
-    //         const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
-    //         const bobItem = await Item.at(bobItemAddress);
-    
-    //         // Supposing Bob and Eve agreed in some way that Carl can rate Bob's Item
-    //             // Eve gives Bob her User contract in order to use it to rate Bob's Item
-    //         await bobItem.grantPermission(eveUserAddress, {from: bob});
-    
-    //         // Check policy's flag of Eve's contract
-    //         const evePolicy = await bobItem.getMyPolicy({from: eveUserAddress});
-    //         assert.equal(evePolicy._granted, true, "Eve's contract should have its policy term equal to true");
-    //         assert.equal(await bobItem.checkForPermission(eveUserAddress), 0, "Eve's User contract permission status should be 0");
-    
-    //         // Rating performed by Eve's User contract
-    //         await eveObject.rate(bobItemAddress, score, timestamp, {from: eve});
-    
-    //         // Check that Eve's contract cannot rate again
-    //         assert.notEqual(await bobItem.checkForPermission(eveUserAddress), 0, "Carl's permission status should be 1 or 2");
-            
-    //         // Check item's ratings
-    //         const ratingBundle = await bobItem.getAllRatings();
-    //         assert.equal(await bobItem.ratingCount(), 11, bobItemName + " should have only 11 rating");
-    //         assert.equal(ratingBundle._scores.length, 11, bobItemName + " should have only 11 score");
-    //         assert.equal(ratingBundle._timestamps.length, 11, bobItemName + " should have only 11 timestamp");
-    //         assert.equal(ratingBundle._raters.length, 11, bobItemName + " should have only 11 rater");
-    //         assert.equal(ratingBundle._scores[10], score, "The score should be " + score);
-    //         assert.equal(ratingBundle._timestamps[10], timestamp, "The timestamp should be " + timestamp);
-    //         assert.equal(ratingBundle._raters[10], eveUserAddress, "The rater should be Eve's User contract: " + eveUserAddress);
-    
-    //         // Check Eve's list of ratings
-    //         const eveRatingBundle = await eveObject.getAllRatings();
-    //         assert.equal(await eveObject.ratingCount(), 1, "Eve's contract should have store only 1 rating");
-    //         assert.equal(eveRatingBundle._scores.length, 1, "Eve's contract should have only 1 score");
-    //         assert.equal(eveRatingBundle._timestamps.length, 1, "Eve's contract should have only 1 timestamp");
-    //         assert.equal(eveRatingBundle._rated.length, 1, "Eve's contract should have only 1 rated Item");
-    //         assert.equal(eveRatingBundle._scores[0], score,  "The score should be " + score);
-    //         assert.equal(eveRatingBundle._timestamps[0], timestamp, "The timestamp should be " + timestamp);
-    //         assert.equal(eveRatingBundle._rated[0], bobItemAddress, "The rated Item should be: " + bobItemAddress);
-    //     });
-    //     // Ok    
-    // });
 
 });

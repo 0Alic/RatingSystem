@@ -1,5 +1,6 @@
 pragma solidity ^0.5.0;
 
+import "./User.sol";
 import "./Interfaces.sol";
 import "./RatingComputer.sol";
 import "./AssetStorage.sol";
@@ -13,6 +14,9 @@ contract Item is Permissioned {
     // Item name
     bytes32 public name;
 
+    // Registered RSF
+    address public RSF;
+
     // Structures to keep track of the ratings performed on this Item
     uint[] public scoreArray;
     uint[] public blockArray;
@@ -22,8 +26,9 @@ contract Item is Permissioned {
     RatingComputer public computer;
 
 
-    constructor (bytes32 _name, address _owner, RatingComputer _computer) Permissioned(_owner) public {
+    constructor (bytes32 _name, address _owner, RatingComputer _computer, address _rsf) Permissioned(_owner) public {
 
+        RSF = _rsf;
         name = _name;
         computer = _computer;
     }
@@ -34,11 +39,25 @@ contract Item is Permissioned {
         selfdestruct(address(uint160(0x0))); // cast 0x0 to address payable
     }
 
+    function grantPermission(address _to) public isOwner {
+
+        // Check if the User and this Item belong to the same RSF
+        User u = User(_to);
+            // Require sender is User of RSF
+        require(u.iAmRegisteredUser(), "Rating can be done only by registered User contracts");
+            // Require User's RSF == my RSF
+        require(u.RSF() == RSF, "User should rate only Items beloning to its RSF");
+
+        // Call parent
+        super.grantPermission(_to);
+    }
+
     /// @notice Rate this Item
     /// @param _score The score to assign to this item
     /// @dev Check whether caller has the permission on this contract (since it's an extension of Permissioned)
     function rate(uint8 _score) external {
 
+        // Check for permissions to rate and the score interval
         require(checkForPermission(msg.sender) == 0, "No permission to rate this Item");
         require(_score >= 1 && _score <= 10, "Score out of scale");
 

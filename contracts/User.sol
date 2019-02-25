@@ -1,5 +1,6 @@
 pragma solidity ^0.5.0;
 
+import "./RatingSystem.sol";
 import "./Interfaces.sol";
 import "./AssetStorage.sol";
 import "./RatingLibrary.sol";
@@ -13,21 +14,25 @@ contract User is Ownable {
     // Username
     bytes32 public name;
 
+    // Who called the constructor (RatingSystemFramework in our context)
+    address public RSF;
+
     // Structure to store Items published by this user    
     OwnableStoragePointer private items;
 
     // Structure to keep track of the ratings done by this user
-    // uint public ratingCount = 0;    
-    // mapping(uint => RatingLibrary.Rating) public ratingMap;
+    uint public ratingCount = 0;    
+    mapping(uint => RatingLibrary.Rating) public ratingMap;
 
     event ItemCreated(Item _itemContract);
-
+    event ItemRated(Item _itemContract);
 
     /// @param _name the username of the User
     /// @param _owner the address of the User
     /// @dev The constructor calls the Ownable constructor to store the owner which should be passed by the RatingSystemFramework
     constructor (bytes32 _name, address _owner) Ownable(_owner)  public {
 
+        RSF = msg.sender;
         items = new OwnableStoragePointer(address(this));
         name = _name;
     }
@@ -38,20 +43,15 @@ contract User is Ownable {
         selfdestruct(address(uint160(0x0))); // cast 0x0 to address payable
     }
     
-    // /// @notice Function to call to rate an Item and keep track of the rating
-    // /// @param _item The Item to rate
-    // /// @param _score The score to assign to that Item
-    // /// @param _timestamp The timestamp of the rating (should be provided by higher level call)
-    // function rate(Item _item, uint8 _score, uint _timestamp) external isOwner {
+    /// @notice Function to call to rate an Item and keep track of the rating
+    /// @param _item The Item to rate
+    /// @param _score The score to assign to that Item
+    function rate(Item _item, uint8 _score) external isOwner {
 
-    //     ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true,
-    //                                                     score: _score,
-    //                                                     timestamp: _timestamp,
-    //                                                     rater: address(this),
-    //                                                     rated: address(_item) });
-    //     ratingCount++;
-    //     _item.rate(_score, _timestamp);
-    // }
+        ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true, score: _score, inBlock: block.number, rated: address(_item), rater: address(this) });
+        ratingCount++;
+        _item.rate(_score);
+    }
 
 
     /// @notice Creates an Item with a name
@@ -59,7 +59,7 @@ contract User is Ownable {
     /// @param _computer The RatingComputer to attach for the computation of the final score of this Item
     function createItem(bytes32 _name, RatingComputer _computer) external isOwner {
 
-        Item item = new Item(_name, owner, _computer);
+        Item item = new Item(_name, owner, _computer, RSF);
         items.insert(address(item));
 
         emit ItemCreated(item);
@@ -74,25 +74,25 @@ contract User is Ownable {
     }
 
 
-    // /// @notice Get all the ratings information connected to this Item
-    // /// @return _scores: the array of scores
-    // /// @return _timestamps: the array of timestamps
-    // /// @return _rated: the array of addresses rated by this User
-    // function getAllRatings() external view returns(uint[] memory _scores, 
-    //                                                 uint[] memory _timestamps,
-    //                                                 address[] memory _rated) {
+    /// @notice Get all the ratings information connected to this Item
+    /// @return _scores: the array of scores
+    /// @return _blocks: the array of timestamps
+    /// @return _rated: the array of addresses rated by this User
+    function getAllRatings() external view returns(uint[] memory _scores, 
+                                                    uint[] memory _blocks, 
+                                                    address[] memory _rated) {
 
-    //     _scores = new uint[](ratingCount);
-    //     _timestamps = new uint[](ratingCount);
-    //     _rated = new address[](ratingCount);
+        _scores = new uint[](ratingCount);
+        _blocks = new uint[](ratingCount);
+        _rated = new address[](ratingCount);
 
-    //     for(uint i=0; i<ratingCount; i++) {
+        for(uint i=0; i<ratingCount; i++) {
 
-    //         _scores[i] = ratingMap[i].score;
-    //         _timestamps[i] = ratingMap[i].timestamp;
-    //         _rated[i] = ratingMap[i].rated;
-    //     }
-    // }
+            _scores[i] = ratingMap[i].score;
+            _blocks[i] = ratingMap[i].inBlock;
+            _rated[i] = ratingMap[i].rated;
+        }
+    }
 
 
     /// @notice Get all the Item of this User
@@ -111,6 +111,12 @@ contract User is Ownable {
         return items.isIn(_item);
     }
 
+
+    function iAmRegisteredUser() external view returns(bool) {
+
+        RatingSystemFramework rsf = RatingSystemFramework(RSF);
+        return rsf.isIn(this);
+    }
     
     // Da qui sotto probabilmente inutili
 

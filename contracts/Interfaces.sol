@@ -51,7 +51,7 @@ contract Permissioned is Ownable {
     /// @notice Grant the permission to access to this contract to a certain address (contract or OWA)
     /// @param _to The address meant to have permission
     /// @dev The owner of this contract cannot grant permission to itself 
-    function grantPermission(address _to) external isOwner {
+    function grantPermission(address _to) public isOwner {
 
         require(_to != owner, "The owner cannot grant permission to himself");
 
@@ -92,10 +92,10 @@ contract Permissioned is Ownable {
     /// @notice Get current permission policy of the caller
     /// @return _deadline: the deadline period (timestamp)
     /// @return _granted: the flag "permission granted"
-    function getMyPolicy() external view returns(uint _deadline, bool _granted) {
+    function getPolicy(address _of) external view returns(uint _deadline, bool _granted) {
 
-        _deadline = permissionMap[msg.sender].periodStart + interval;
-        _granted = permissionMap[msg.sender].granted;
+        _deadline = permissionMap[_of].periodStart + interval;
+        _granted = permissionMap[_of].granted;
     }
 
 }
