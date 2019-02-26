@@ -10,22 +10,17 @@ import "./RatingComputer.sol";
 /// @title User
 /// @notice This contract represents a user of the RatingSystemFramework. A user can create Items
 contract User is Ownable {
+    
+    // Data
+    bytes32                public name;         // Username
+    address                public RSF;          // The RatingSystemFramework the User belongs to
+    OwnableStoragePointer  private items;       // Structure to store Items published by this user
+    RatingLibrary.Rating[] public ratingArray;  // Structure to keep track of the ratings performed by this user
 
-    // Username
-    bytes32 public name;
-
-    // Who called the constructor (RatingSystemFramework in our context)
-    address public RSF;
-
-    // Structure to store Items published by this user    
-    OwnableStoragePointer private items;
-
-    // Structure to keep track of the ratings done by this user
-    uint public ratingCount = 0;    
-    mapping(uint => RatingLibrary.Rating) public ratingMap;
-
+    // Events
     event ItemCreated(Item _itemContract);
-    event ItemRated(Item _itemContract);
+    event ItemRated(Item _item, uint8 _score, uint _block, User _rater);
+
 
     /// @param _name the username of the User
     /// @param _owner the address of the User
@@ -38,19 +33,28 @@ contract User is Ownable {
     }
 
 
+    /// @notice De-activate this contract
     function destroy() external isOwner {
         // We don't assume User contracts to store ether
         selfdestruct(address(uint160(0x0))); // cast 0x0 to address payable
     }
     
-    /// @notice Function to call to rate an Item and keep track of the rating
+
+    /// @notice Rate an Item and keep track of the rating
     /// @param _item The Item to rate
     /// @param _score The score to assign to that Item
     function rate(Item _item, uint8 _score) external isOwner {
 
-        ratingMap[ratingCount] = RatingLibrary.Rating({isValid: true, score: _score, inBlock: block.number, rated: address(_item), rater: address(this) });
-        ratingCount++;
+        uint _block = block.number;
+
         _item.rate(_score);
+        ratingArray.push(RatingLibrary.Rating({isValid: true, 
+                                                score: _score, 
+                                                inBlock: _block, 
+                                                rated: address(_item), 
+                                                rater: address(this) }));
+
+        emit ItemRated(_item, _score, _block, this);
     }
 
 
@@ -82,15 +86,17 @@ contract User is Ownable {
                                                     uint[] memory _blocks, 
                                                     address[] memory _rated) {
 
+        uint ratingCount = ratingArray.length;
+
         _scores = new uint[](ratingCount);
         _blocks = new uint[](ratingCount);
         _rated = new address[](ratingCount);
 
         for(uint i=0; i<ratingCount; i++) {
 
-            _scores[i] = ratingMap[i].score;
-            _blocks[i] = ratingMap[i].inBlock;
-            _rated[i] = ratingMap[i].rated;
+            _scores[i] = ratingArray[i].score;
+            _blocks[i] = ratingArray[i].inBlock;
+            _rated[i] = ratingArray[i].rated;
         }
     }
 
@@ -112,6 +118,7 @@ contract User is Ownable {
     }
 
 
+    /// @notice Check if I am a registered User of my RatingSystemFramework
     function iAmRegisteredUser() external view returns(bool) {
 
         RatingSystemFramework rsf = RatingSystemFramework(RSF);
@@ -120,20 +127,20 @@ contract User is Ownable {
     
     // Da qui sotto probabilmente inutili
 
-    /// @notice Get the number of Item deployed by this User
-    /// @return The number of Item
-    function itemCount() external view returns(uint) {
+    // /// @notice Get the number of Item deployed by this User
+    // /// @return The number of Item
+    // function itemCount() external view returns(uint) {
 
-        return items.getCount();
-    }
+    //     return items.getCount();
+    // }
 
 
-    /// @notice Get the Item of a given index
-    /// @param _index The index of the Item
-    /// @return The Item
-    function getItemByIndex(uint _index) external view returns(address) {
+    // /// @notice Get the Item of a given index
+    // /// @param _index The index of the Item
+    // /// @return The Item
+    // function getItemByIndex(uint _index) external view returns(address) {
 
-        return items.getKeyAt(_index);
-    }
+    //     return items.getKeyAt(_index);
+    // }
 
 }

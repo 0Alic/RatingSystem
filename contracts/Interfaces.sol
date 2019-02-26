@@ -45,10 +45,11 @@ contract Permissioned is Ownable {
     event NewPermission(address _to);
     event PermissionRevoked(address _to);
 
+
     constructor (address _owner) Ownable(_owner) public {}
 
 
-    /// @notice Grant the permission to access to this contract to a certain address (contract or OWA)
+    /// @notice Grant the permission to access to this contract to a certain address (contract or EOA)
     /// @param _to The address meant to have permission
     /// @dev The owner of this contract cannot grant permission to itself 
     function grantPermission(address _to) public isOwner {
@@ -61,7 +62,7 @@ contract Permissioned is Ownable {
     }
 
 
-    /// @notice Revoke the permission to access to this contract to a certain address (contract or OWA)
+    /// @notice Revoke the permission to access to this contract to a certain address (contract or EOA)
     /// @param _to The address to revoke permission
     /// @dev Only the owner of this contract or the receiver itself can revoke the permission to the receiver
     function revokePermission(address _to) public {
@@ -88,9 +89,10 @@ contract Permissioned is Ownable {
 
         return 0;
     }
+    
 
     /// @notice Get current permission policy of the caller
-    /// @return _deadline: the deadline period (timestamp)
+    /// @return _deadline: the deadline period (block number)
     /// @return _granted: the flag "permission granted"
     function getPolicy(address _of) external view returns(uint _deadline, bool _granted) {
 
