@@ -8,14 +8,23 @@
     "ropsten": {
 
         "trials": 120,
-        "rater": "0xEa90E7320e682631686Ec7417bCD8c73e0D75487",
-        "item": "0xB337cD7204549bb4a99e35C9d09b600D9E5c1b3C",
+        "rater": "0x1A67D2B704962432F646Bb45A9506fC55d7cC63E",
+        "item": "0x054e1174f629460491Ced634B71dDf062BE50922",
         "ratingComputer": {
-            "1": "simpleAvg",
-            "2": "weightedAvg"
+            "0": "simpleAvg",
+            "1": "weightedAvg"
         },
         "ratingList": [1, 50, 250, 500, 1000, 2000, 2500, 3000, 3500, 4000],
         "samples": 25,
-        "degrees": [1, 20]
+        "degrees": [1, 20],
+        
+        "test": {
+
+            "transactionsPerBlock": {
+
+                "degrees": [1, 10, 50, 100, 150, 250]
+            }
+
+        }
     }
 }

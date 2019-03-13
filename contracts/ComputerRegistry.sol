@@ -7,7 +7,7 @@ import {RatingComputer, SimpleAvarageComputer} from "./RatingComputer.sol";
 /// @notice This contracts stores a list of RatingComputers. An Item can pick from this registry the computer it wants to use to compute its final score
 contract ComputerRegistry is Ownable {
 
-    RatingComputer[] private registry;
+    RatingComputer[] private registry;  // Se metto public questo mi evito la funzione getComputer
     bytes32[] private ids;
 
     constructor(address _owner) Ownable(_owner) public {}

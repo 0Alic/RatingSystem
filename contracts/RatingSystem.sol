@@ -82,12 +82,12 @@ contract RatingSystemFramework is Ownable {
 
     // May be deleted
 
-    // /// @notice Get the number of stored User contracts in this System
-    // /// @return The number of stored User contracts
-    // function userCount() external view returns(uint) {
+    /// @notice Get the number of stored User contracts in this System
+    /// @return The number of stored User contracts
+    function userCount() external view returns(uint) {
 
-    //     return users.getCount();
-    // }
+        return users.getCount();
+    }
 
     // /// @notice Get the address of the User contract at a given index
     // /// @param _index The index to check

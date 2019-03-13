@@ -155,7 +155,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const computerAddress = await computerRegistry.getComputer(0); // first computer, the only one deployed
     
             // Create Item for bob
-            const tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), computerAddress, {from: bob});
+            const tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), {from: bob});
     
             // Retrieve item's contract instance
             const itemList = await bobObject.getItems();
@@ -201,7 +201,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             assert.equal(await bobObject.isIn(deployedItemAddress), false, deployedItemAddress + " should NOT belong to bob's User contract");
     
             // Insert again bob's content
-            tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), computerAddress, {from: bob});
+            tx = await bobObject.createItem(web3.utils.fromUtf8(bobItemName), {from: bob});
     
             // Retrieve item's contract instance
             itemList = await bobObject.getItems();
@@ -463,8 +463,11 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const bobItemList = await bobObject.getItems();
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
-            const bobComputer = await bobItem.computer();
-            
+            // Get computer
+            const registryAddress = await ratingSystem.computerRegistry();
+            const registry = await ComputerRegistry.at(registryAddress);
+            const bobComputer = await registry.getComputer(0); // 1st computer is the simple average 
+
             // Perform a loop of rating
             let ratings = [];
             let expectedScore = score;
@@ -500,14 +503,14 @@ contract("RatingSystemFramework: correctness test", accounts => {
         it("Should test the WeightedAverageComputer contract for " + bobItemName , async() => {
 
             const ratingSystem = await RatingSystem.deployed();
-            const registryAddress = await ratingSystem.computerRegistry();
-            const registry = await ComputerRegistry.at(registryAddress);
             const bobUserAddress = await ratingSystem.getMyUserContract({from: bob});
             const bobObject = await User.at(bobUserAddress);
             const bobItemList = await bobObject.getItems();
             const bobItemAddress = bobItemList[0]; // Bob deployed only one Item
             const bobItem = await Item.at(bobItemAddress);
 
+            const registryAddress = await ratingSystem.computerRegistry();
+            const registry = await ComputerRegistry.at(registryAddress);
             const weightComputer = await registry.getComputer(1); // 2nd computer is the weighted average 
                
             const ratings = await bobItem.getAllRatings();

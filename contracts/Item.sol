@@ -14,7 +14,6 @@ contract Item is Permissioned {
     // Data
     bytes32        public name;         // Item nickname
     address        public RSF;          // The RatingSystemFramework the Item belongs to
-    RatingComputer public computer;     // Contract in charge to compute the final score of this Item 
     uint[]         public scoreArray;   // Array of scores
     uint[]         public blockArray;   // Array of blocks the scores belong to
     User[]         public raterArray;   // Array of raters
@@ -25,12 +24,10 @@ contract Item is Permissioned {
 
     /// @param _name the nickname of the Item
     /// @param _owner the owner's address of the Item
-    /// @param _computer The RatingComputer connected to the Item
     /// @param _rsf The RatingSystemFramework the Item belongs to
     /// @dev The constructor calls the Permisioned constructor
     constructor (bytes32 _name,             
                  address _owner,            
-                 RatingComputer _computer,  
                  address _rsf )               
                  
                  Permissioned(_owner)
@@ -39,7 +36,6 @@ contract Item is Permissioned {
 
         RSF = _rsf;
         name = _name;
-        computer = _computer;
     }
 
 
@@ -61,6 +57,7 @@ contract Item is Permissioned {
         require(u.iAmRegisteredUser(), "Rating can be done only by registered User contracts");
             // Require User's RSF == my RSF
         require(u.RSF() == RSF, "User should rate only Items beloning to its RSF");
+        require(u.owner() != owner, "Cannot grant permissions to User itself");
 
         // Call parent
         super.grantPermission(_to);
@@ -94,15 +91,6 @@ contract Item is Permissioned {
     }
     
 
-    /// @notice Change the contract in charge to compute the final score
-    /// @param _newComputer The new computer
-    /// @dev Only contracts of RatingComputer interface are allowed
-    function changeComputer(RatingComputer _newComputer) external isOwner {
-
-        computer = _newComputer;
-    }
-
-
     /// @notice Compute the final score
     /// @param _computer The RatingComputer to use to compute the final score
     /// @return The final score of this Item
@@ -124,7 +112,7 @@ contract Item is Permissioned {
         _blocks = blockArray;
         _raters = raterArray;
     }
-    
+
 
     /// @notice Get the number of ratings performed on this Item
     /// @return The number of ratings

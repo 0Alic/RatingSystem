@@ -1,6 +1,7 @@
 // Artifacts == truffle's contract abstraction
 const Framework = artifacts.require("./RatingSystemFramework");
 const User = artifacts.require("./User");
+const Item = artifacts.require("./Item");
 const ComputerRegistry = artifacts.require("./ComputerRegistry");
 const SimpleComputer = artifacts.require("./SimpleAvarageComputer");
 const WeightComputer = artifacts.require("./WeightedAverageComputer");
@@ -30,20 +31,56 @@ module.exports = function(deployer, network, accounts) {
             const system = await deployer.deploy(Framework, {from: alice});
 
             // Populate ComputerRegistry
-            const pc = await deployer.deploy(WeightComputer, {from: alice});
             const registryAddress = await system.computerRegistry();
-            const registry = await ComputerRegistry.at(registryAddress);            
+            const registry = await ComputerRegistry.at(registryAddress);
+
+            let pc = await deployer.deploy(WeightComputer, {from: alice});
             await registry.pushComputer(pc.address, web3.utils.fromUtf8("Weighted Average"), {from: alice});
+
+            pc = await deployer.deploy(SimpleComputer, {from: alice});
+            await registry.pushComputer(pc.address, web3.utils.fromUtf8("Simple Average"), {from: alice});
+
 
             // Create Users
             await system.createUser(web3.utils.fromUtf8("Bob"), {from: bob});
             await system.createUser(web3.utils.fromUtf8("Carl"), {from: carl});
 
-            // Create Items
+            // Get Users
             let bobUser = await system.getMyUserContract({from: bob});
             bobUser = await User.at(bobUser);
-            await bobUser.createItem(web3.utils.fromUtf8("Innovation"), pc.address, {from: bob});
-            await bobUser.createItem(web3.utils.fromUtf8("7Wonders"), pc.address, {from: bob});
+            let carlUser = await system.getMyUserContract({from: carl});
+            carlUser = await User.at(carlUser);
+            
+            // Create Items
+            await bobUser.createItem(web3.utils.fromUtf8("Innovation"), {from: bob});
+            await bobUser.createItem(web3.utils.fromUtf8("7Wonders"), {from: bob});
+
+            // Create a few ratings
+            const items = await bobUser.getItems();
+            let item1 = await Item.at(items[0]);
+            let item2 = await Item.at(items[1]);
+
+            // TODO fare una funzione
+            let scores = [3, 3, 3, 9, 6, 6, 9, 9, 9];
+            scores.forEach(async (s) => {
+
+                item1.grantPermission(carlUser.address, {from: bob});
+                carlUser.rate(item1.address, s, {from: carl});
+            });
+
+            scores = [7, 7, 9, 5, 10, 6, 8, 8];
+            scores.forEach(async (s) => {
+
+                item2.grantPermission(carlUser.address, {from: bob});
+                carlUser.rate(item2.address, s, {from: carl});
+            });
+
+            scores = [10, 10, 10, 10];
+            scores.forEach(async (s) => {
+
+                item1.grantPermission(carlUser.address, {from: bob});
+                carlUser.rate(item1.address, s, {from: carl});
+            });
 
         }
         else if(network=="testing") {

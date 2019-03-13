@@ -60,10 +60,9 @@ contract User is Ownable {
 
     /// @notice Creates an Item with a name
     /// @param _name the name of the Item to create
-    /// @param _computer The RatingComputer to attach for the computation of the final score of this Item
-    function createItem(bytes32 _name, RatingComputer _computer) external isOwner {
+    function createItem(bytes32 _name) external isOwner {
 
-        Item item = new Item(_name, owner, _computer, RSF);
+        Item item = new Item(_name, owner, RSF);
         items.insert(address(item));
 
         emit ItemCreated(item);
@@ -127,12 +126,12 @@ contract User is Ownable {
     
     // Da qui sotto probabilmente inutili
 
-    // /// @notice Get the number of Item deployed by this User
-    // /// @return The number of Item
-    // function itemCount() external view returns(uint) {
+    /// @notice Get the number of Item deployed by this User
+    /// @return The number of Item
+    function itemCount() external view returns(uint) {
 
-    //     return items.getCount();
-    // }
+        return items.getCount();
+    }
 
 
     // /// @notice Get the Item of a given index
