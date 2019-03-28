@@ -1,5 +1,14 @@
 # Rating System
+
+[ ] **TODO**
+
 ## Smart Contract for support to rating platforms
 
-## Simple overview
-![a](./jpg/OverviewSimple.png)
+[ ] **TODO**
+
+## Class overview
+![a](./jpg/Classes.png)
+
+## ComputerRegistry and RatingComputer
+
+![a](./jpg/RatingComputer.png)
