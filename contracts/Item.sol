@@ -67,7 +67,7 @@ contract Item is Permissioned {
     /// @notice Rate this Item
     /// @param _score The score to assign to this item
     /// @dev Check whether caller has the permission on this contract (since it's an extension of Permissioned)
-    function rate(uint8 _score) external {
+    function addRate(uint8 _score) external {
 
         address _sender = msg.sender;   // Store the sender as "address"
         User _rater = User(_sender);    // Store the sender as "User"

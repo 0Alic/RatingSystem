@@ -277,7 +277,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             assert.equal(carlPolicy._granted, true, "Carl (User) should have its policy term equal to true");
     
             // Carl (User) rates Bob's item
-            await carlObject.rate(bobItemAddress, score, {from: carl});
+            await carlObject.addRate(bobItemAddress, score, {from: carl});
     
             // Check that Carl cannot rate again
             assert.notEqual(await bobItem.checkForPermission(carlUserAddress), 0, "Carl's permission status should be 1 or 2");
@@ -309,7 +309,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             const bobItem = await Item.at(bobItemAddress);
 
     
-            await carlObject.rate(bobItemAddress, score, {from: carl}).then(assert.fail).catch(function(error) {
+            await carlObject.addRate(bobItemAddress, score, {from: carl}).then(assert.fail).catch(function(error) {
                 // Should fail because Carl has no permission to rate
                 assert(error.message.indexOf('revert') >= 0, 'Carl ' + carl +  ' has no permission to rate ' + bobItemName);
             });
@@ -344,7 +344,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
             assert.equal(carlPolicy._granted, false, "Carl should have its policy term equal to false");
     
             // Carl tries to rate anyway
-            await carlObject.rate(bobItemAddress, score, {from: carl}).then(assert.fail).catch(function(error) {
+            await carlObject.addRate(bobItemAddress, score, {from: carl}).then(assert.fail).catch(function(error) {
                 // Should fail because Carl has no permission to rate
                 assert(error.message.indexOf('revert') >= 0, 'Carl ' + carl +  ' has no permission to rate ' + bobItemName);
             });
@@ -405,7 +405,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
         // Ok
 
 
-        it("Should check grantPermission() and rate() to be called only by registered User contracts", async() => {
+        it("Should check grantPermission() and addRate() to be called only by registered User contracts", async() => {
 
             const ratingSystem = await RatingSystem.deployed();
             // Get Carl User
@@ -487,7 +487,7 @@ contract("RatingSystemFramework: correctness test", accounts => {
     
                 expectedScore += rating.score;
                 bobItem.grantPermission(carlUserAddress, {from: bob});
-                carlObject.rate(bobItemAddress, rating.score, {from: rating.rater});
+                carlObject.addRate(bobItemAddress, rating.score, {from: rating.rater});
             });
     
             // Check the number of registered ratings is ok

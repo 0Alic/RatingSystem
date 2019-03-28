@@ -21,6 +21,7 @@ module.exports = function(deployer, network, accounts) {
         if(network=="development") {
 
             // Deploy on local network
+            let tx;
 
             // Get accounts from Ganache
             const alice = accounts[1]; // System creator
@@ -35,15 +36,19 @@ module.exports = function(deployer, network, accounts) {
             const registry = await ComputerRegistry.at(registryAddress);
 
             let pc = await deployer.deploy(WeightComputer, {from: alice});
-            await registry.pushComputer(pc.address, web3.utils.fromUtf8("Weighted Average"), {from: alice});
+            tx = await registry.pushComputer(pc.address, web3.utils.fromUtf8("Weighted Average"), {from: alice});
+            // console.log("**** Push Computer gas used 1st:" + tx.receipt.gasUsed);
 
             pc = await deployer.deploy(SimpleComputer, {from: alice});
-            await registry.pushComputer(pc.address, web3.utils.fromUtf8("Simple Average"), {from: alice});
+            tx = await registry.pushComputer(pc.address, web3.utils.fromUtf8("Simple Average"), {from: alice});
+            // console.log("**** Push Computer gas used 2nd:" + tx.receipt.gasUsed);
 
 
             // Create Users
-            await system.createUser(web3.utils.fromUtf8("Bob"), {from: bob});
-            await system.createUser(web3.utils.fromUtf8("Carl"), {from: carl});
+            tx = await system.createUser(web3.utils.fromUtf8("Bob"), {from: bob});
+            // console.log("**** Create User gas used 1st:" + tx.receipt.gasUsed);
+            tx = await system.createUser(web3.utils.fromUtf8("Carl"), {from: carl});
+            // console.log("**** Create User gas used 2nd:" + tx.receipt.gasUsed);
 
             // Get Users
             let bobUser = await system.getMyUserContract({from: bob});
@@ -52,8 +57,10 @@ module.exports = function(deployer, network, accounts) {
             carlUser = await User.at(carlUser);
             
             // Create Items
-            await bobUser.createItem(web3.utils.fromUtf8("Innovation"), {from: bob});
-            await bobUser.createItem(web3.utils.fromUtf8("7Wonders"), {from: bob});
+            tx = await bobUser.createItem(web3.utils.fromUtf8("Innovation"), {from: bob});
+            // console.log("**** Create Item gas used 1st:" + tx.receipt.gasUsed);
+            tx = await bobUser.createItem(web3.utils.fromUtf8("7Wonders"), {from: bob});
+            // console.log("**** Create Item gas used 2nd:" + tx.receipt.gasUsed);
 
             // Create a few ratings
             const items = await bobUser.getItems();
@@ -62,26 +69,29 @@ module.exports = function(deployer, network, accounts) {
 
             // TODO fare una funzione
             let scores = [3, 3, 3, 9, 6, 6, 9, 9, 9];
-            scores.forEach(async (s) => {
-
-                item1.grantPermission(carlUser.address, {from: bob});
-                carlUser.rate(item1.address, s, {from: carl});
-            });
+            for(i=0; i<scores.length; i++) {
+                
+                tx = await item1.grantPermission(carlUser.address, {from: bob});
+                // console.log("**** Grant Permission gas used: " + tx.receipt.gasUsed);
+                tx = await carlUser.addRate(item1.address, scores[i], {from: carl});
+                // console.log("**** Rate gas used: " + tx.receipt.gasUsed);
+            }
 
             scores = [7, 7, 9, 5, 10, 6, 8, 8];
             scores.forEach(async (s) => {
 
                 item2.grantPermission(carlUser.address, {from: bob});
-                carlUser.rate(item2.address, s, {from: carl});
+                carlUser.addRate(item2.address, s, {from: carl});
             });
 
             scores = [10, 10, 10, 10];
             scores.forEach(async (s) => {
 
                 item1.grantPermission(carlUser.address, {from: bob});
-                carlUser.rate(item1.address, s, {from: carl});
+                carlUser.addRate(item1.address, s, {from: carl});
             });
 
+            await item1.grantPermission(carlUser.address, {from: bob});
         }
         else if(network=="testing") {
             
@@ -104,15 +114,28 @@ module.exports = function(deployer, network, accounts) {
         else if(network=="ropsten") {
 
             // Deploy on ropsten
-            const system = await deployer.deploy(Framework);
-            const avgPc = await deployer.deploy(SimpleComputer);
-            const wgtPc = await deployer.deploy(WeightComputer);
+            let system, avgPc, wgtPc;
+            let promises = []
+
+            promises.push(deployer.deploy(Framework));
+            promises.push(deployer.deploy(SimpleComputer));
+            promises.push(deployer.deploy(WeightComputer));
+
+            [system, avgPc, wgtPc] = await Promise.all(promises);
+            // const system = await deployer.deploy(Framework);
+            // const avgPc = await deployer.deploy(SimpleComputer);
+            // const wgtPc = await deployer.deploy(WeightComputer);
 
             const registryAddress = await system.computerRegistry();
             const registry = await ComputerRegistry.at(registryAddress);
 
-            await registry.pushComputer(avgPc.address, web3.utils.fromUtf8("Simple Average"));
-            await registry.pushComputer(wgtPc.address, web3.utils.fromUtf8("Weighted Average"));
+            promises = [];
+            promises.push(registry.pushComputer(avgPc.address, web3.utils.fromUtf8("Simple Average")));
+            promises.push(registry.pushComputer(wgtPc.address, web3.utils.fromUtf8("Weighted Average")));
+
+            await Promise.all(promises);
+            // await registry.pushComputer(avgPc.address, web3.utils.fromUtf8("Simple Average"));
+            // await registry.pushComputer(wgtPc.address, web3.utils.fromUtf8("Weighted Average"));
         }
         else {
             // Define other networks

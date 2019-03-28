@@ -8,7 +8,7 @@
     "ropsten": {
 
         "trials": 120,
-        "rater": "0x1A67D2B704962432F646Bb45A9506fC55d7cC63E",
+        "rater": "0xB9c122059eF70262F8Cd172c12a00f77fdc24265",
         "item": "0x054e1174f629460491Ced634B71dDf062BE50922",
         "ratingComputer": {
             "0": "simpleAvg",
@@ -22,7 +22,8 @@
 
             "transactionsPerBlock": {
 
-                "degrees": [1, 10, 50, 100, 150, 250]
+                "degrees": [1, 10, 50, 100, 150, 250],
+                "itemDegrees": [1, 2, 5, 10, 25, 50]
             }
 
         }

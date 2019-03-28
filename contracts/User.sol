@@ -43,11 +43,11 @@ contract User is Ownable {
     /// @notice Rate an Item and keep track of the rating
     /// @param _item The Item to rate
     /// @param _score The score to assign to that Item
-    function rate(Item _item, uint8 _score) external isOwner {
+    function addRate(Item _item, uint8 _score) external isOwner {
 
         uint _block = block.number;
 
-        _item.rate(_score);
+        _item.addRate(_score);
         ratingArray.push(RatingLibrary.Rating({isValid: true, 
                                                 score: _score, 
                                                 inBlock: _block, 
