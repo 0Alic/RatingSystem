@@ -9,7 +9,7 @@
 
         "trials": 120,
         "rater": "0xB9c122059eF70262F8Cd172c12a00f77fdc24265",
-        "item": "0x054e1174f629460491Ced634B71dDf062BE50922",
+        "item": "0xFbF1a48be96Db9E4eEEc31a13e363Ce388725200",
         "ratingComputer": {
             "0": "simpleAvg",
             "1": "weightedAvg"
